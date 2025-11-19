@@ -40,10 +40,58 @@ jobs:
         id: version
         run: |
           set -euo pipefail
+          EVENT="$EVENT_NAME"
+          TARGET_BRANCH=""
+          case "$EVENT" in
+            pull_request)
+              if [ "$PR_MERGED" != "true" ]; then
+                echo "run_job=false" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              TARGET_BRANCH="$PR_BASE"
+              ;;
+            push)
+              TARGET_BRANCH="$REF_NAME"
+              ;;
+            workflow_dispatch)
+              if [ -n "$DISPATCH_BRANCH" ]; then
+                TARGET_BRANCH="$DISPATCH_BRANCH"
+              else
+                TARGET_BRANCH="develop"
+              fi
+              ;;
+            *)
+              TARGET_BRANCH="develop"
+              ;;
+          esac
+
+          if [ -z "$TARGET_BRANCH" ]; then
+            echo "Branch alvo não detectada."
+            exit 1
+          fi
+
+          if [ "$TARGET_BRANCH" != "develop" ] && [ "$TARGET_BRANCH" != "main" ]; then
+            echo "Branch $TARGET_BRANCH não suportada. Encerrando."
+            echo "run_job=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          RELEASE_TYPE="patch"
+          if [ "$TARGET_BRANCH" = "main" ]; then
+            RELEASE_TYPE="major"
+          fi
+
           git fetch --tags --force
-          LAST_TAG=$(git tag -l 'v[0-9]*.0.[0-9]*' --sort=-version:refname | head -n 1 || true)
-          CURRENT_MAJOR=$(echo "${LAST_TAG:-0}" | sed -E 's/^v([0-9]+)\.0\.[0-9]+$/\1/')
-          CURRENT_MAJOR=${CURRENT_MAJOR:-0}
+          LAST_GLOBAL_TAG=$(git tag -l 'v[0-9]*.0.[0-9]*' --sort=-version:refname | head -n 1 || true)
+
+          CURRENT_MAJOR=0
+          if [ -n "$LAST_GLOBAL_TAG" ]; then
+            CURRENT_MAJOR=$(echo "$LAST_GLOBAL_TAG" | sed -E 's/^v([0-9]+)\.0\.[0-9]+$/\1/')
+          fi
+          if [ -z "$CURRENT_MAJOR" ]; then
+            CURRENT_MAJOR=0
+          fi
+
           NEXT_MAJOR=$CURRENT_MAJOR
           NEXT_PATCH=0
           NEXT_TAG=""
@@ -56,8 +104,16 @@ jobs:
           else
             [ "$NEXT_MAJOR" -eq 0 ] && NEXT_MAJOR=1
             LAST_MAJOR_TAG=$(git tag -l "v${NEXT_MAJOR}.0.*" --sort=-version:refname | head -n 1 || true)
-            LAST_PATCH=$(echo "${LAST_MAJOR_TAG:-0}" | sed -E 's/^v[0-9]+\.0\.([0-9]+)$/\1/')
-            NEXT_PATCH=$((LAST_PATCH + 1))
+            if [ -z "$LAST_MAJOR_TAG" ]; then
+              NEXT_PATCH=0
+            else
+              LAST_PATCH=$(echo "$LAST_MAJOR_TAG" | sed -E 's/^v[0-9]+\.0\.([0-9]+)$/\1/')
+              if ! [[ "$LAST_PATCH" =~ ^[0-9]+$ ]]; then
+                echo "Última tag ${LAST_MAJOR_TAG} não possui parte numérica válida."
+                exit 1
+              fi
+              NEXT_PATCH=$((LAST_PATCH + 1))
+            fi
             NEXT_TAG="v${NEXT_MAJOR}.0.${NEXT_PATCH}"
           fi
           echo "last_tag=${LAST_TAG}" >> "$GITHUB_OUTPUT"
@@ -65,18 +121,7 @@ jobs:
           echo "target_branch=${TARGET_BRANCH}" >> "$GITHUB_OUTPUT"
           echo "release_type=${RELEASE_TYPE}" >> "$GITHUB_OUTPUT"
           echo "run_job=true" >> "$GITHUB_OUTPUT"
-
-      - name: Define changelog branch name
-        run: echo "BRANCH_NAME=changelog-update-${{ steps.version.outputs.next_tag }}-${{ github.run_id }}" >> $GITHUB_ENV
-
-      - name: Checkout changelog branch
-        if: steps.version.outputs.run_job == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin ${{ env.BRANCH_NAME }} || true
-          git checkout -B ${{ env.BRANCH_NAME }}
-          git reset --hard origin/${{ env.BRANCH_NAME }} || true
+          echo "Proxima tag: ${NEXT_TAG}"
 
       - name: Update changelog
         id: changelog
@@ -106,31 +151,33 @@ jobs:
           } > "$CHANGELOG_FILE"
           echo "has_updates=true" >> "$GITHUB_OUTPUT"
 
-      - name: Commit and push changelog
+      - name: Commit changelog
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
+        env:
+          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
+          TARGET_BRANCH: ${{ steps.version.outputs.target_branch }}
         run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG
-          git commit -m "docs: update changelog for ${{ steps.version.outputs.next_tag }}" || echo "Nada novo para comitar"
-          git push https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }} HEAD --force-with-lease
-
-      - name: Create Pull Request
-        if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.PAT }}
-          branch: ${{ env.BRANCH_NAME }}
-          delete-branch: true
-          title: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
-          body: "Este PR foi gerado automaticamente para atualizar o changelog."
-          base: ${{ steps.version.outputs.target_branch }}
-          labels: documentation
+          git commit -m "docs: update changelog for ${NEXT_TAG}"
+          git push origin HEAD:"$TARGET_BRANCH"
 
       - name: Create and push tag
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
+        env:
+          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
+          TARGET_BRANCH: ${{ steps.version.outputs.target_branch }}
         run: |
           set -euo pipefail
-          NEXT_TAG="${{ steps.version.outputs.next_tag }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$NEXT_TAG" -m "Tag automatica gerada"
+          if [ -z "$NEXT_TAG" ]; then
+            echo "Sem nova tag para criar."
+            exit 0
+          fi
+          if git rev-parse "$NEXT_TAG" >/dev/null 2>&1; then
+            echo "Tag ${NEXT_TAG} já existe. Nada a fazer."
+            exit 0
+          fi
+          git tag -a "$NEXT_TAG" -m "Tag automatica gerada para ${TARGET_BRANCH}"
           git push origin "$NEXT_TAG"
