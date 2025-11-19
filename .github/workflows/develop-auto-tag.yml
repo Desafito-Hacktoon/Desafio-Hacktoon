@@ -23,6 +23,9 @@ permissions:
   actions: write
   pull-requests: write
 
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   tag-develop:
     if: github.actor != 'github-actions[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
@@ -47,10 +50,7 @@ jobs:
           TARGET_BRANCH=""
           case "$EVENT" in
             pull_request)
-              if [ "$PR_MERGED" != "true" ]; then
-                echo "run_job=false" >> "$GITHUB_OUTPUT"
-                exit 0
-              fi
+              [ "$PR_MERGED" != "true" ] && echo "run_job=false" >> "$GITHUB_OUTPUT" && exit 0
               TARGET_BRANCH="$PR_BASE"
               ;;
             push)
@@ -64,24 +64,16 @@ jobs:
               ;;
           esac
 
-          if [ "$TARGET_BRANCH" != "develop" ] && [ "$TARGET_BRANCH" != "main" ]; then
-            echo "Branch $TARGET_BRANCH não suportada."
-            echo "run_job=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          [ "$TARGET_BRANCH" != "develop" ] && [ "$TARGET_BRANCH" != "main" ] && echo "run_job=false" >> "$GITHUB_OUTPUT" && exit 0
 
           RELEASE_TYPE="patch"
-          if [ "$TARGET_BRANCH" = "main" ]; then
-            RELEASE_TYPE="major"
-          fi
+          [ "$TARGET_BRANCH" = "main" ] && RELEASE_TYPE="major"
 
           git fetch --tags --force
           LAST_GLOBAL_TAG=$(git tag -l 'v[0-9]*.0.[0-9]*' --sort=-version:refname | head -n 1 || true)
 
           CURRENT_MAJOR=0
-          if [ -n "$LAST_GLOBAL_TAG" ]; then
-            CURRENT_MAJOR=$(echo "$LAST_GLOBAL_TAG" | sed -E 's/^v([0-9]+)\.0\.[0-9]+$/\1/')
-          fi
+          [ -n "$LAST_GLOBAL_TAG" ] && CURRENT_MAJOR=$(echo "$LAST_GLOBAL_TAG" | sed -E 's/^v([0-9]+)\.0\.[0-9]+$/\1/')
           CURRENT_MAJOR=${CURRENT_MAJOR:-0}
 
           NEXT_MAJOR=$CURRENT_MAJOR
@@ -124,11 +116,7 @@ jobs:
           else
             COMMITS=$(git log --pretty=format:"- %s")
           fi
-          if [ -z "$COMMITS" ]; then
-            [ "$RELEASE_TYPE" = "major" ] && COMMITS="- Release major sem commits adicionais."
-            echo "has_updates=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          [ -z "$COMMITS" ] && echo "has_updates=false" >> "$GITHUB_OUTPUT" && exit 0
           [ ! -f "$CHANGELOG_FILE" ] && echo "# Changelog" > "$CHANGELOG_FILE"
           EXISTING_CONTENT=$(sed '1d' "$CHANGELOG_FILE" || true)
           {
@@ -142,6 +130,11 @@ jobs:
           } > "$CHANGELOG_FILE"
           echo "has_updates=true" >> "$GITHUB_OUTPUT"
 
+      - name: Debug flags
+        run: |
+          echo "run_job=${{ steps.version.outputs.run_job }}"
+          echo "has_updates=${{ steps.changelog.outputs.has_updates }}"
+
       - name: Create changelog branch and push
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
         env:
@@ -154,12 +147,13 @@ jobs:
           git checkout -b "$BRANCH_NAME"
           git add CHANGELOG
           git commit -m "docs: update changelog for ${NEXT_TAG}"
-          git push origin "$BRANCH_NAME"
+          git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} "$BRANCH_NAME"
 
       - name: Create Pull Request
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: changelog-update-${{ steps.version.outputs.next_tag }}
           title: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
           body: "Este PR foi gerado automaticamente para atualizar o changelog."
@@ -172,9 +166,5 @@ jobs:
           NEXT_TAG: ${{ steps.version.outputs.next_tag }}
         run: |
           set -euo pipefail
-          if git rev-parse "$NEXT_TAG" >/dev/null 2>&1; then
-            echo "Tag ${NEXT_TAG} já existe."
-            exit 0
-          fi
           git tag -a "$NEXT_TAG" -m "Tag automatica gerada"
           git push origin "$NEXT_TAG"
