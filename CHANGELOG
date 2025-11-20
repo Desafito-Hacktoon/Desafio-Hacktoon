@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.8 - 2025-11-20
+
+- Merge pull request #47 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+
+
 ## v1.0.5 - 2025-11-20
 
 - Merge pull request #38 from Desafito-Hacktoon/changelog-update-v1.0.3-69
