@@ -88,34 +88,27 @@ jobs:
             echo ""
             echo "## $NEXT_TAG - $(date -u +'%Y-%m-%d')"
             echo ""
-            echo "$COMMITS"
+            echo "$COMMITS"ff
             echo ""
             [ -n "$EXISTING_CONTENT" ] && echo "$EXISTING_CONTENT"
           } > "$CHANGELOG_FILE"
           echo "has_updates=true" >> "$GITHUB_OUTPUT"
 
-      - name: Create changelog branch and push
+      - name: Checkout changelog branch
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
         run: |
-          set -euo pipefail
           BRANCH_NAME="changelog-update-${{ steps.version.outputs.next_tag }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin "$BRANCH_NAME" || true
-          git checkout -b "$BRANCH_NAME" || git checkout "$BRANCH_NAME"
-          git rebase origin/"$BRANCH_NAME" || true
+          git checkout -B "$BRANCH_NAME"
 
-          # Garante que o arquivo existe e está atualizado
-          echo "Conteúdo atual do CHANGELOG:"
-          cat CHANGELOG || echo "Arquivo não existe"
-
+      - name: Generate and commit changelog
+        if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
+        run: |
           git add CHANGELOG
-          git status
-          git diff --cached
-
           git commit -m "docs: update changelog for ${{ steps.version.outputs.next_tag }}" || echo "Nada novo para comitar"
-          git push https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }} "$BRANCH_NAME" --force
-
+          git push https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }} HEAD --force-with-lease
 
       - name: Create Pull Request
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
@@ -139,3 +132,4 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$NEXT_TAG" -m "Tag automatica gerada"
+
