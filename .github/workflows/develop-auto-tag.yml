@@ -103,7 +103,7 @@ jobs:
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           commit-message: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
           branch: changelog-update-${{ steps.version.outputs.next_tag }}
           title: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
