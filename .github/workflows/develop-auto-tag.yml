@@ -118,7 +118,7 @@ jobs:
           body: "Este PR foi gerado automaticamente para atualizar o changelog."
           base: ${{ steps.version.outputs.target_branch }}
           labels: documentation
-          
+
       - name: Create and push tag
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
         run: |
@@ -127,5 +127,3 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$NEXT_TAG" -m "Tag automatica gerada"
-          git push origin "$NEXT_TAG"
-          
