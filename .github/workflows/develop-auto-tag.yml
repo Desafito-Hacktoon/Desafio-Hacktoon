@@ -66,15 +66,17 @@ jobs:
           echo "release_type=${RELEASE_TYPE}" >> "$GITHUB_OUTPUT"
           echo "run_job=true" >> "$GITHUB_OUTPUT"
 
+      - name: Define changelog branch name
+        run: echo "BRANCH_NAME=changelog-update-${{ steps.version.outputs.next_tag }}-${{ github.run_id }}" >> $GITHUB_ENV
+
       - name: Checkout changelog branch
         if: steps.version.outputs.run_job == 'true'
         run: |
-          BRANCH_NAME="changelog-update-${{ steps.version.outputs.next_tag }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin "$BRANCH_NAME" || true
-          git checkout -B "$BRANCH_NAME"
-          git reset --hard origin/"$BRANCH_NAME" || true
+          git fetch origin ${{ env.BRANCH_NAME }} || true
+          git checkout -B ${{ env.BRANCH_NAME }}
+          git reset --hard origin/${{ env.BRANCH_NAME }} || true
 
       - name: Update changelog
         id: changelog
@@ -116,7 +118,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.PAT }}
-          branch: changelog-update-${{ steps.version.outputs.next_tag }}
+          branch: ${{ env.BRANCH_NAME }}
           delete-branch: true
           title: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
           body: "Este PR foi gerado automaticamente para atualizar o changelog."
