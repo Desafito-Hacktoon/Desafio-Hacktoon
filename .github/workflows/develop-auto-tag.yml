@@ -23,6 +23,9 @@ permissions:
   actions: write
   pull-requests: write
 
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 jobs:
   tag-develop:
     if: github.actor != 'github-actions[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
@@ -63,6 +66,18 @@ jobs:
           echo "release_type=${RELEASE_TYPE}" >> "$GITHUB_OUTPUT"
           echo "run_job=true" >> "$GITHUB_OUTPUT"
 
+      - name: Define changelog branch name
+        run: echo "BRANCH_NAME=changelog-update-${{ steps.version.outputs.next_tag }}-${{ github.run_id }}" >> $GITHUB_ENV
+
+      - name: Checkout changelog branch
+        if: steps.version.outputs.run_job == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin ${{ env.BRANCH_NAME }} || true
+          git checkout -B ${{ env.BRANCH_NAME }}
+          git reset --hard origin/${{ env.BRANCH_NAME }} || true
+
       - name: Update changelog
         id: changelog
         if: steps.version.outputs.run_job == 'true'
@@ -91,27 +106,24 @@ jobs:
           } > "$CHANGELOG_FILE"
           echo "has_updates=true" >> "$GITHUB_OUTPUT"
 
-      - name: Commit changelog (local only)
+      - name: Commit and push changelog
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG
-          git commit -m "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
+          git commit -m "docs: update changelog for ${{ steps.version.outputs.next_tag }}" || echo "Nada novo para comitar"
+          git push https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }} HEAD --force-with-lease
 
-      - name: Create Pull Request with changelog
+      - name: Create Pull Request
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.PAT }}
-          commit-message: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
-          branch: changelog-update-${{ steps.version.outputs.next_tag }}
+          branch: ${{ env.BRANCH_NAME }}
+          delete-branch: true
           title: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
           body: "Este PR foi gerado automaticamente para atualizar o changelog."
           base: ${{ steps.version.outputs.target_branch }}
           labels: documentation
-          add-paths: |
-            CHANGELOG
 
       - name: Create and push tag
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
@@ -121,4 +133,4 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$NEXT_TAG" -m "Tag automatica gerada"
-          git push origin "$NEXT_TAG" 
+          git push origin "$NEXT_TAG"
