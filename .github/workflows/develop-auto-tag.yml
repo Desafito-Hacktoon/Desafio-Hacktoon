@@ -40,22 +40,22 @@ jobs:
         id: version
         run: |
           set -euo pipefail
-          EVENT="$EVENT_NAME"
+          EVENT="${{ github.event_name }}"
           TARGET_BRANCH=""
           case "$EVENT" in
             pull_request)
-              if [ "$PR_MERGED" != "true" ]; then
+              if [ "${{ github.event.pull_request.merged }}" != "true" ]; then
                 echo "run_job=false" >> "$GITHUB_OUTPUT"
                 exit 0
               fi
-              TARGET_BRANCH="$PR_BASE"
+              TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
               ;;
             push)
-              TARGET_BRANCH="$REF_NAME"
+              TARGET_BRANCH="${{ github.ref_name }}"
               ;;
             workflow_dispatch)
-              if [ -n "$DISPATCH_BRANCH" ]; then
-                TARGET_BRANCH="$DISPATCH_BRANCH"
+              if [ -n "${{ github.event.inputs.target_branch }}" ]; then
+                TARGET_BRANCH="${{ github.event.inputs.target_branch }}"
               else
                 TARGET_BRANCH="develop"
               fi
@@ -64,64 +64,6 @@ jobs:
               TARGET_BRANCH="develop"
               ;;
           esac
-
-          if [ -z "$TARGET_BRANCH" ]; then
-            echo "Branch alvo não detectada."
-            exit 1
-          fi
-
-          if [ "$TARGET_BRANCH" != "develop" ] && [ "$TARGET_BRANCH" != "main" ]; then
-            echo "Branch $TARGET_BRANCH não suportada. Encerrando."
-            echo "run_job=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          RELEASE_TYPE="patch"
-          if [ "$TARGET_BRANCH" = "main" ]; then
-            RELEASE_TYPE="major"
-          fi
-
-          git fetch --tags --force
-          LAST_GLOBAL_TAG=$(git tag -l 'v[0-9]*.0.[0-9]*' --sort=-version:refname | head -n 1 || true)
-
-          CURRENT_MAJOR=0
-          if [ -n "$LAST_GLOBAL_TAG" ]; then
-            CURRENT_MAJOR=$(echo "$LAST_GLOBAL_TAG" | sed -E 's/^v([0-9]+)\.0\.[0-9]+$/\1/')
-          fi
-          if [ -z "$CURRENT_MAJOR" ]; then
-            CURRENT_MAJOR=0
-          fi
-
-          NEXT_MAJOR=$CURRENT_MAJOR
-          NEXT_PATCH=0
-          NEXT_TAG=""
-          TARGET_BRANCH="${{ github.ref_name }}"
-          RELEASE_TYPE="patch"
-          [ "$TARGET_BRANCH" = "main" ] && RELEASE_TYPE="major"
-          if [ "$RELEASE_TYPE" = "major" ]; then
-            NEXT_MAJOR=$((CURRENT_MAJOR + 1))
-            NEXT_TAG="v${NEXT_MAJOR}.0.0"
-          else
-            [ "$NEXT_MAJOR" -eq 0 ] && NEXT_MAJOR=1
-            LAST_MAJOR_TAG=$(git tag -l "v${NEXT_MAJOR}.0.*" --sort=-version:refname | head -n 1 || true)
-            if [ -z "$LAST_MAJOR_TAG" ]; then
-              NEXT_PATCH=0
-            else
-              LAST_PATCH=$(echo "$LAST_MAJOR_TAG" | sed -E 's/^v[0-9]+\.0\.([0-9]+)$/\1/')
-              if ! [[ "$LAST_PATCH" =~ ^[0-9]+$ ]]; then
-                echo "Última tag ${LAST_MAJOR_TAG} não possui parte numérica válida."
-                exit 1
-              fi
-              NEXT_PATCH=$((LAST_PATCH + 1))
-            fi
-            NEXT_TAG="v${NEXT_MAJOR}.0.${NEXT_PATCH}"
-          fi
-          echo "last_tag=${LAST_TAG}" >> "$GITHUB_OUTPUT"
-          echo "next_tag=${NEXT_TAG}" >> "$GITHUB_OUTPUT"
-          echo "target_branch=${TARGET_BRANCH}" >> "$GITHUB_OUTPUT"
-          echo "release_type=${RELEASE_TYPE}" >> "$GITHUB_OUTPUT"
-          echo "run_job=true" >> "$GITHUB_OUTPUT"
-          echo "Proxima tag: ${NEXT_TAG}"
 
       - name: Update changelog
         id: changelog
