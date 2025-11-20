@@ -28,24 +28,15 @@ env:
 
 jobs:
   tag-develop:
-    if: github.actor != 'github-actions[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.merged == true)
+    # CORREÇÃO: Ignora PRs de changelog para evitar loop infinito
+    if: |
+      github.actor != 'github-actions[bot]' && 
+      (github.event_name != 'pull_request' || 
+        (github.event.pull_request.merged == true && 
+         !contains(github.event.pull_request.title, 'update changelog')))
     runs-on: ubuntu-latest
     steps:
-      - name: Check if should skip
-        id: should_skip
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            PR_TITLE="${{ github.event.pull_request.title }}"
-            if [[ "$PR_TITLE" == *"changelog"* ]] || [[ "$PR_TITLE" == *"docs:"* ]]; then
-              echo "skip=true" >> "$GITHUB_OUTPUT"
-              echo "Pulando execução para PR de changelog"
-              exit 0
-            fi
-          fi
-          echo "skip=false" >> "$GITHUB_OUTPUT"
-
       - name: Checkout repository
-        if: steps.should_skip.outputs.skip != 'true'
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT }}
@@ -127,7 +118,7 @@ jobs:
               fi
               NEXT_PATCH=$((LAST_PATCH + 1))
             fi
-            NEXT_TAG="v${NEXT_MAJOR}.0.${NEXT_PATCH}"
+            NEXT_TAG="v${NEXT_MAJOR}.0.${NEXT_TAG}"
           fi
           
           echo "last_tag=${LAST_GLOBAL_TAG}" >> "$GITHUB_OUTPUT"
