@@ -106,7 +106,7 @@ jobs:
           git rebase origin/"$BRANCH_NAME" || true
           git add CHANGELOG
           git commit -m "docs: update changelog for ${{ steps.version.outputs.next_tag }}" || echo "Nada novo para comitar"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} "$BRANCH_NAME" --force
+          git push https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }} "$BRANCH_NAME" --force
 
       - name: Create Pull Request
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
