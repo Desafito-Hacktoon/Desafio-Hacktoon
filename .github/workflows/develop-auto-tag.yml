@@ -113,13 +113,12 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          repository: Desafito-Hacktoon/Desafio-Hacktoon
           branch: changelog-update-${{ steps.version.outputs.next_tag }}
           title: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
           body: "Este PR foi gerado automaticamente para atualizar o changelog."
           base: ${{ steps.version.outputs.target_branch }}
           labels: documentation
-
+          
       - name: Create and push tag
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
         run: |
