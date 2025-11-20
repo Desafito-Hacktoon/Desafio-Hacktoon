@@ -24,7 +24,7 @@ permissions:
   pull-requests: write
 
 env:
-  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GH_TOKEN: ${{ secrets.PAT }}
 
 jobs:
   tag-develop:
@@ -34,6 +34,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.PAT }}
           fetch-depth: 0
 
       - name: Compute next tag
@@ -64,6 +65,63 @@ jobs:
               TARGET_BRANCH="develop"
               ;;
           esac
+
+          if [ -z "$TARGET_BRANCH" ]; then
+            echo "Branch alvo não detectada."
+            exit 1
+          fi
+
+          if [ "$TARGET_BRANCH" != "develop" ] && [ "$TARGET_BRANCH" != "main" ]; then
+            echo "Branch $TARGET_BRANCH não suportada. Encerrando."
+            echo "run_job=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          RELEASE_TYPE="patch"
+          if [ "$TARGET_BRANCH" = "main" ]; then
+            RELEASE_TYPE="major"
+          fi
+
+          git fetch --tags --force
+          LAST_GLOBAL_TAG=$(git tag -l 'v[0-9]*.0.[0-9]*' --sort=-version:refname | head -n 1 || true)
+
+          CURRENT_MAJOR=0
+          if [ -n "$LAST_GLOBAL_TAG" ]; then
+            CURRENT_MAJOR=$(echo "$LAST_GLOBAL_TAG" | sed -E 's/^v([0-9]+)\.0\.[0-9]+$/\1/')
+          fi
+          if [ -z "$CURRENT_MAJOR" ]; then
+            CURRENT_MAJOR=0
+          fi
+
+          NEXT_MAJOR=$CURRENT_MAJOR
+          NEXT_PATCH=0
+          NEXT_TAG=""
+          
+          if [ "$RELEASE_TYPE" = "major" ]; then
+            NEXT_MAJOR=$((CURRENT_MAJOR + 1))
+            NEXT_TAG="v${NEXT_MAJOR}.0.0"
+          else
+            [ "$NEXT_MAJOR" -eq 0 ] && NEXT_MAJOR=1
+            LAST_MAJOR_TAG=$(git tag -l "v${NEXT_MAJOR}.0.*" --sort=-version:refname | head -n 1 || true)
+            if [ -z "$LAST_MAJOR_TAG" ]; then
+              NEXT_PATCH=0
+            else
+              LAST_PATCH=$(echo "$LAST_MAJOR_TAG" | sed -E 's/^v[0-9]+\.0\.([0-9]+)$/\1/')
+              if ! [[ "$LAST_PATCH" =~ ^[0-9]+$ ]]; then
+                echo "Última tag ${LAST_MAJOR_TAG} não possui parte numérica válida."
+                exit 1
+              fi
+              NEXT_PATCH=$((LAST_PATCH + 1))
+            fi
+            NEXT_TAG="v${NEXT_MAJOR}.0.${NEXT_PATCH}"
+          fi
+          
+          echo "last_tag=${LAST_GLOBAL_TAG}" >> "$GITHUB_OUTPUT"
+          echo "next_tag=${NEXT_TAG}" >> "$GITHUB_OUTPUT"
+          echo "target_branch=${TARGET_BRANCH}" >> "$GITHUB_OUTPUT"
+          echo "release_type=${RELEASE_TYPE}" >> "$GITHUB_OUTPUT"
+          echo "run_job=true" >> "$GITHUB_OUTPUT"
+          echo "Proxima tag: ${NEXT_TAG}"
 
       - name: Update changelog
         id: changelog
@@ -97,6 +155,7 @@ jobs:
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
+          token: ${{ secrets.PAT }}
           commit-message: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
           branch: changelog-update-${{ steps.version.outputs.next_tag }}-${{ github.run_number }}
           title: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
@@ -127,5 +186,7 @@ jobs:
             echo "Tag ${NEXT_TAG} já existe. Nada a fazer."
             exit 0
           fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$NEXT_TAG" -m "Tag automatica gerada para ${TARGET_BRANCH}"
-          git push origin "$NEXT_TAG"
+          git push https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }} "$NEXT_TAG"
