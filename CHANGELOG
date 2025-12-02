@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.0.5 - 2025-12-02
+
+- Merge pull request #73 from Desafito-Hacktoon/feat/001-docker
+- adicionado script de inicialização para o postgre
+- adicionado docker compose
+
+
 ## v1.0.10 - 2025-11-20
 
 - Merge pull request #54 from Desafito-Hacktoon/hotfix/001-workflow
