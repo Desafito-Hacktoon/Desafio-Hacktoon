@@ -1,0 +1,16 @@
+# services/geo-engine/Dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY *.sln ./
+COPY src/ ./src/
+RUN dotnet restore ./src/GeoEngine/GeoEngine.csproj
+RUN dotnet publish ./src/GeoEngine/GeoEngine.csproj -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app/publish .
+# Kestrel em 8080 dentro do container
+ENV ASPNETCORE_URLS=http://0.0.0.0:8080
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "GeoEngine.dll"]
+
