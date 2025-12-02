@@ -1,0 +1,85 @@
+# Changelog
+
+## v1.0.10 - 2025-11-20
+
+- Merge pull request #54 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #51 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+
+
+## v1.0.8 - 2025-11-20
+
+- Merge pull request #47 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+
+
+## v1.0.5 - 2025-11-20
+
+- Merge pull request #38 from Desafito-Hacktoon/changelog-update-v1.0.3-69
+- docs: update changelog for v1.0.3
+
+
+## v1.0.3 - 2025-11-20
+
+- Merge pull request #36 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #35 from Desafito-Hacktoon/feat/001-docker
+- 	modified:   Backend/dockerfile
+- Merge pull request #34 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #33 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #15 from Desafito-Hacktoon/changelog-update-v1.0.2
+- Merge branch 'develop' into changelog-update-v1.0.2
+- Merge pull request #24 from Desafito-Hacktoon/changelog-update-v1.0.3
+- Merge branch 'develop' into changelog-update-v1.0.2
+- Merge branch 'develop' into changelog-update-v1.0.3
+- Merge pull request #32 from Desafito-Hacktoon/changelog-update-v1.0.3-19524458494
+- docs: update changelog for v1.0.3
+- Merge pull request #31 from Desafito-Hacktoon/feat/001-docker
+- 	modified:   Backend/dockerfile
+- Merge pull request #30 from Desafito-Hacktoon/changelog-update-v1.0.3-19524008059
+- docs: update changelog for v1.0.3
+- Merge pull request #29 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #28 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #27 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- docs: update changelog for v1.0.3
+- Merge pull request #26 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #25 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #23 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #22 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #21 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #20 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #19 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   .github/workflows/develop-auto-tag.yml
+- Merge pull request #18 from Desafito-Hacktoon/hotfix/001-workflow
+- atualizção5 workflow
+- Merge pull request #17 from Desafito-Hacktoon/hotfix/001-workflow
+- atualizção workflow 4
+- Merge pull request #16 from Desafito-Hacktoon/hotfix/001-workflow
+- atualizção workflow 3
+- docs: update changelog for v1.0.2
+
+
+## v1.0.2 - 2025-11-20
+
+- Merge pull request #14 from Desafito-Hacktoon/hotfix/001-workflow
+- atualização workflow 2
+- Merge pull request #13 from Desafito-Hacktoon/hotfix/001-workflow
+- atualização workflow
+- Merge pull request #12 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   develop-auto-tag.yml
+- Merge pull request #11 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   develop-auto-tag.yml
+- Merge pull request #10 from Desafito-Hacktoon/hotfix/001-workflow
+- 	modified:   develop-auto-tag.yml
