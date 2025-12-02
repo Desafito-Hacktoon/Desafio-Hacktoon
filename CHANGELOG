@@ -1,5 +1,16 @@
 # Changelog
 
+## v2.0.8 - 2025-12-02
+
+- Merge pull request #82 from Desafito-Hacktoon/feat/criacao-model-enum-repository
+- feat: implementa a estrutura de gerenciamento de ocorrências com DTOs, mapeamento, serviço e controlador REST
+- fix: atualizado o email do pgadmin
+- feat: criado a configuração do REDIS, e definido as configurações do application properties, e corrigido a versao do swagger
+- feat: criação do mapeamento das excessoes
+- feat: criação do repository e da configuração do swagger
+- feat: criado models e enums de ocorrencia e problema
+
+
 ## v1.0.10 - 2025-11-20
 
 - Merge pull request #54 from Desafito-Hacktoon/hotfix/001-workflow
