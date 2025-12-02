@@ -49,13 +49,26 @@ public final class Constants {
         public static final double EARTH_RADIUS_METERS = 6371000.0;
         
         // Coordenadas de Blumenau, SC
-        public static final double BLUMENAU_LATITUDE = -26.9194;
-        public static final double BLUMENAU_LONGITUDE = -49.0661;
+        public static final double BLUMENAU_LATITUDE = -26.5510;
+        public static final double BLUMENAU_LONGITUDE = -49.0258;
         
         // Raio padrão para buscas próximas (em metros)
         public static final double DEFAULT_SEARCH_RADIUS = 5000.0; // 5km
         
         private Geo() {}
+    }
+
+    /**
+     * Constantes de paginação.
+     */
+    public static final class Pagination {
+        public static final int DEFAULT_PAGE = 0;
+        public static final int DEFAULT_SIZE = 20;
+        public static final int MAX_SIZE = 100;
+        public static final String DEFAULT_SORT = "dataCriacao";
+        public static final String DEFAULT_DIRECTION = "DESC";
+        
+        private Pagination() {}
     }
 }
 
