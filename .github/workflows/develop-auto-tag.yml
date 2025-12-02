@@ -156,25 +156,29 @@ jobs:
           } > "$CHANGELOG_FILE"
           echo "has_updates=true" >> "$GITHUB_OUTPUT"
 
-      - name: Create Pull Request for changelog
+      - name: Commit and push changelog
+        if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
+        run: |
+          git add CHANGELOG
+          git commit -m "docs: update changelog for ${{ steps.version.outputs.next_tag }}" || echo "Nada novo para comitar"
+          git push https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }} HEAD --force-with-lease
+
+      - name: Create Pull Request
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.PAT }}
+<<<<<<< HEAD
+          branch: ${{ env.BRANCH_NAME }}
+          delete-branch: true
+=======
           commit-message: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
           branch: changelog-update-${{ steps.version.outputs.next_tag }}-${{ github.run_number }}
+>>>>>>> 0240e299f4a3f4754586dda4d0f61598c36d6e05
           title: "docs: update changelog for ${{ steps.version.outputs.next_tag }}"
-          body: |
-            🤖 Atualização automática do changelog
-            
-            **Versão:** ${{ steps.version.outputs.next_tag }}
-            **Branch alvo:** ${{ steps.version.outputs.target_branch }}
-            **Tipo de release:** ${{ steps.version.outputs.release_type }}
-            
-            Este PR foi gerado automaticamente pelo workflow de versionamento.
-            Por favor, revise as alterações antes de fazer o merge.
-          labels: documentation
+          body: "Este PR foi gerado automaticamente para atualizar o changelog."
           base: ${{ steps.version.outputs.target_branch }}
+          labels: documentation
 
       - name: Create and push tag
         if: steps.changelog.outputs.has_updates == 'true' && steps.version.outputs.run_job == 'true'
