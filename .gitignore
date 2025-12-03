@@ -52,6 +52,7 @@ docker-compose.override.yml
 node_modules/
 dist/
 build/
+.angular/
 
 # ------------------------------
 # Java / Maven / Gradle
@@ -75,9 +76,15 @@ obj/
 # ------------------------------
 .vscode/
 .idea/
+.cursor
 *.iml
 *.suo
 *.user
 *.db
 *.DS_Store
 Thumbs.db
+
+# ------------------------------
+# Outros
+# ------------------------------
+docs/
