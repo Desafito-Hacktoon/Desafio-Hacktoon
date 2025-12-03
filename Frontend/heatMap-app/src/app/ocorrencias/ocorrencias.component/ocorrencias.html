@@ -1,0 +1,16 @@
+<ul class="divide-y divide-gray-200 border border-gray-300 rounded">
+  @for (o of ocorrencias; track o.id) {
+    <li class="p-4 hover:bg-gray-50">
+      <a [routerLink]="['/ocorrencias', o.id]" class="font-bold text-blue-600 hover:underline">
+        {{ o.tipoProblema }}
+      </a>
+      <div class="text-gray-700">{{ o.descricao }}</div>
+      <div class="text-sm text-gray-500">
+        {{ o.bairro }} - {{ o.endereco }}
+      </div>
+      <div class="text-xs text-gray-400">
+        Gravidade: {{ o.gravidade }} | Status: {{ o.status }}
+      </div>
+    </li>
+  }
+</ul>
