@@ -73,7 +73,7 @@ public class Ocorrencia {
     private Integer gravidadeIA;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
+    @Column(name = "status", nullable = false, length = 25)
     @NotNull(message = "Status é obrigatório")
     @Builder.Default
     private StatusOcorrencia status = StatusOcorrencia.PENDENTE;

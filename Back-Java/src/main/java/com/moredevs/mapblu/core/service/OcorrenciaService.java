@@ -10,6 +10,7 @@ import com.moredevs.mapblu.core.dto.response.PagedResponse;
 import com.moredevs.mapblu.core.exception.EntityNotFoundException;
 import com.moredevs.mapblu.core.mapper.OcorrenciaMapper;
 import com.moredevs.mapblu.core.repository.OcorrenciaRepository;
+import com.moredevs.mapblu.ingestion.ia.IAService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -35,18 +36,36 @@ public class OcorrenciaService {
 
     private final OcorrenciaRepository repository;
     private final OcorrenciaMapper mapper;
+    private final IAService iaService;
 
     /**
      * Cria uma nova ocorrência.
+     * Se a gravidade não foi fornecida ou gravidadeIA não foi fornecida, classifica automaticamente via IA.
      */
     @CacheEvict(value = {CACHE_OCORRENCIAS, CACHE_STATS, CACHE_BAIRROS_CRITICOS}, allEntries = true)
     public OcorrenciaResponse criar(OcorrenciaRequest request) {
         log.info("Criando nova ocorrência: tipo={}, bairro={}", request.getTipoProblema(), request.getBairro());
         
         Ocorrencia ocorrencia = mapper.toEntity(request);
+        
+        if (request.getGravidadeIA() == null) {
+            Integer gravidadeIA = iaService.classificarGravidade(ocorrencia);
+            ocorrencia.setGravidadeIA(gravidadeIA);
+            
+            if (ocorrencia.getGravidade() == null) {
+                ocorrencia.setGravidade(gravidadeIA);
+                log.info("Gravidade definida pela IA: {}", gravidadeIA);
+            } else {
+                log.info("Gravidade manual: {}, Gravidade IA: {}", ocorrencia.getGravidade(), gravidadeIA);
+            }
+        } else if (ocorrencia.getGravidade() == null) {
+            ocorrencia.setGravidade(ocorrencia.getGravidadeIA());
+        }
+        
         Ocorrencia saved = repository.save(ocorrencia);
         
-        log.info("Ocorrência criada com sucesso: id={}", saved.getId());
+        log.info("Ocorrência criada com sucesso: id={}, gravidade={}, gravidadeIA={}", 
+                saved.getId(), saved.getGravidade(), saved.getGravidadeIA());
         return mapper.toResponse(saved);
     }
 
