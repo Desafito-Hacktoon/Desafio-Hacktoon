@@ -18,7 +18,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-city_user} -d ${POSTGRES_DB:-city_ops}",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}",
         ]
       interval: 10s
       timeout: 5s
@@ -66,7 +66,7 @@ services:
     container_name: backend-csharp-geo
     restart: unless-stopped
     environment:
-      DB_CONNECTION: Host=postgres;Port=5432;Database=${POSTGRES_DB:-city_ops};Username=${POSTGRES_USER:-city_user};Password=${POSTGRES_PASSWORD:-city_pass}
+      DB_CONNECTION: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
     ports:
       - "5000:8080"
     depends_on:
