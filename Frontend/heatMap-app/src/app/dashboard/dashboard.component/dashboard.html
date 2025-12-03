@@ -1,0 +1,95 @@
+<div class="dashboard-container">
+<div class="p-grid">
+  <!-- Card com tabela -->
+  <div class="p-col-12 p-md-6">
+    <div class="custom-box">
+    <p-card>
+      <ng-template pTemplate="header"><h2 class="titulo-card">Ocorrências do mês</h2></ng-template>
+      <p-table [value]="ocorrencias"
+      [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[5,10,20,50]"
+        [scrollable]="true"
+        scrollHeight="400px"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="dataCriacao">
+              Data
+              <p-columnFilter field="dataCriacao" matchMode="contains" Class="filtro-tabela" display="menu"></p-columnFilter>
+            </th>
+            <th pSortableColumn="tipoProblema">
+              Tipo
+              <p-columnFilter field="tipoProblema" matchMode="contains" display="menu"></p-columnFilter>
+            </th>
+            <th pSortableColumn="descricao">
+              Descrição
+              <p-columnFilter field="descricao" matchMode="contains" display="menu"></p-columnFilter>
+            </th>
+            <th pSortableColumn="bairro">
+              Bairro
+              <p-columnFilter field="bairro" matchMode="contains" display="menu"></p-columnFilter>
+            </th>
+            <th pSortableColumn="gravidade">
+              Gravidade
+              <p-columnFilter field="gravidade" matchMode="contains" display="menu"></p-columnFilter>
+            </th>
+            <th pSortableColumn="status">
+              Status
+              <p-columnFilter field="status" matchMode="contains" display="menu"></p-columnFilter>
+            </th>
+            <th pSortableColumn="secretariaOrigem">
+              Secretaria
+              <p-columnFilter field="secretariaOrigem" matchMode="contains" display="menu"></p-columnFilter>
+            </th>
+            <th pSortableColumn="dataAtualizacao">
+              Data de Atualização
+              <p-columnFilter field="dataAtualizacao" matchMode="contains" display="menu"></p-columnFilter>
+            </th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-oc>
+          <tr>
+            <td>{{ oc.dataCriacao | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ oc.tipoProblema }}</td>
+            <td>{{ oc.descricao }}</td>
+            <td>{{ oc.bairro}}</td>
+            <td [ngClass]="{
+              'gravidade-alto': oc.gravidade >= 8,
+              'gravidade-media': oc.gravidade >= 4 && oc.gravidade < 8,
+              'gravidade-baixa': oc.gravidade < 4
+            }">
+              {{ oc.gravidade }}
+            </td>
+            <td>{{ oc.status }}</td>
+            <td>{{ oc.secretariaOrigem}}</td>
+            <td>{{ oc.dataAtualizacao | date:'dd/MM/yyyy HH:mm'}}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+  </div>
+</div>
+  <!-- Card com gráfico de pizza -->
+  <div class="graficos-container">
+    <div class="grafico">
+    <p-card>
+      <ng-template pTemplate="header"><h2 class="titulo-card">Tipos de Ocorrencias</h2></ng-template>
+      <p-chart type="pie" [data]="pieData" [options]="pieOptions"></p-chart>
+    </p-card>
+  </div>
+  <div class="grafico">
+    <p-card>
+      <ng-template pTemplate="header"><h2 class="titulo-card">Bairros</h2></ng-template>
+      <p-chart type="pie" [data]="pieData2" [options]="pieOptions2"></p-chart>
+      </p-card>
+  </div>
+  <div class="grafico">
+    <p-card>
+      <ng-template pTemplate="header"><h2 class="titulo-card">Status</h2></ng-template>
+      <p-chart type="pie" [data]="pieData3" [options]="pieOptions3"></p-chart>
+    </p-card>
+  </div>
+  </div>
+</div>
