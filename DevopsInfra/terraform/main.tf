@@ -178,19 +178,21 @@ resource "aws_instance" "BluLabs_server" {
 
   # Copia o .env da sua máquina para dentro da EC2
   provisioner "file" {
-    source      = "DevopsInfra/.env"
-    destination = "/home/ubuntu/Desafio-Hackathon/DevopsInfra/.env"
+    source      = "../.env"
+    destination = "/home/ubuntu/.env"
   }
 
 
   # Executa os comandos do Docker Compose já com o .env presente
   provisioner "remote-exec" {
-    inline = [
-      "cd /home/ubuntu/Desafio-Hackathon/DevopsInfra",
-      "docker-compose pull",
-      "docker-compose up --build -d"
-    ]
-  }
+  inline = [
+    "while [ ! -d /home/ubuntu/Desafio-Hackathon/DevopsInfra ]; do sleep 2; done",
+    "if [ -f /home/ubuntu/.env ]; then sudo mv /home/ubuntu/.env /home/ubuntu/Desafio-Hackathon/DevopsInfra/.env; else echo 'Arquivo .env não encontrado'; fi",
+    "cd /home/ubuntu/Desafio-Hackathon/DevopsInfra",
+    "sudo docker-compose pull",
+    "sudo docker-compose up --build -d"
+  ]
+}
 
   # Conexão SSH para os provisioners
   connection {
