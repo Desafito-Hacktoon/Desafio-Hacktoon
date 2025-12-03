@@ -173,11 +173,33 @@ resource "aws_instance" "BluLabs_server" {
     # Clonar repositório
     cd /home/ubuntu
     git clone https://github.com/Desafito-Hacktoon/Desafio-Hackathon.git
-    cd Desafio-Hackathon
-
-    # Subir containers
-    docker-compose up -d
+       
   EOF
+
+  # Copia o .env da sua máquina para dentro da EC2
+  provisioner "file" {
+    source      = "DevopsInfra/.env"
+    destination = "/home/ubuntu/Desafio-Hackathon/DevopsInfra/.env"
+  }
+  
+
+  # Executa os comandos do Docker Compose já com o .env presente
+  provisioner "remote-exec" {
+    inline = [
+      "cd /home/ubuntu/Desafio-Hackathon/DevopsInfra",
+      "docker-compose pull",
+      "docker-compose up --build -d"
+    ]
+  }
+
+  # Conexão SSH para os provisioners
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = file("~/.ssh/id_rsa")
+    host        = self.public_ip
+  }
+
 
   tags = {
     Name        = "BluLabs-server"
