@@ -1,12 +1,14 @@
-import {AfterViewInit, Component, OnDestroy} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, signal} from '@angular/core';
 import * as L from 'leaflet';
 import {HeatmapService} from '../services/heatmap.service';
 import {HexagonUtil} from '../utils/hexagon.util';
+import {ZardIconComponent} from '@shared/components/icon/icon.component';
+import {CommonModule} from '@angular/common';
 
 @Component({
   selector: 'app-leaflet-map',
   standalone: true,
-  imports: [],
+  imports: [ZardIconComponent, CommonModule],
   templateUrl: './leaflet.map.html',
   styleUrls: ['./leaflet.map.css',]
 })
@@ -16,6 +18,7 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
   private mapMoveEndHandler?: () => void;
   private mapZoomEndHandler?: () => void;
   private occurrenceData: Map<string, { count: number; intensity: number; point: [number, number] }> = new Map();
+  showInfoTooltip = signal(true);
 
   constructor(private heatmapService: HeatmapService) {}
 
@@ -112,9 +115,26 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
 
     // Gera a grade hexagonal com posições fixas
     // Os hexágonos sempre têm as mesmas posições no mundo real
+    // Expande os bounds significativamente para garantir cobertura completa em todos os zooms
+    const zoom = this.map.getZoom();
+    // Margem maior em zooms distantes
+    const margin = zoom < 10 ? 0.1 : zoom < 13 ? 0.05 : 0.02;
+    
     const hexagons = HexagonUtil.generateHexagonGrid({
-      bounds: { north, south, east, west },
+      bounds: { 
+        north: north + margin, 
+        south: south - margin, 
+        east: east + margin, 
+        west: west - margin 
+      },
       hexSize: 200 // Não usado diretamente, mas mantido para compatibilidade
+    });
+    
+    console.log(`Zoom: ${zoom}, Bounds expandidos:`, { 
+      north: north + margin, 
+      south: south - margin, 
+      east: east + margin, 
+      west: west - margin 
     });
 
     // Encontra ocorrências para cada hexágono baseado na localização geográfica
@@ -206,5 +226,9 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
       // Adiciona ao grupo de camadas
       this.hexagonLayers.addLayer(hexagonPolygon);
     });
+  }
+
+  toggleInfoTooltip() {
+    this.showInfoTooltip.set(!this.showInfoTooltip());
   }
 }

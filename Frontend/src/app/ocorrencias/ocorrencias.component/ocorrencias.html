@@ -1,16 +1,173 @@
-<ul class="divide-y divide-gray-200 border border-gray-300 rounded">
-  @for (o of ocorrencias; track o.id) {
-    <li class="p-4 hover:bg-gray-50">
-      <a [routerLink]="['/ocorrencias', o.id]" class="font-bold text-blue-600 hover:underline">
-        {{ o.tipoProblema }}
-      </a>
-      <div class="text-gray-700">{{ o.descricao }}</div>
-      <div class="text-sm text-gray-500">
-        {{ o.bairro }} - {{ o.endereco }}
+<div class="font-sans">
+  <z-card zTitle="Ocorrências">
+    <div class="space-y-4">
+      <div class="mb-4 p-3 bg-gray-50 rounded-lg border">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Buscar</label>
+            <input z-input zSize="sm" type="text" placeholder="Buscar..." [value]="filtroBusca"
+              (input)="filtroBusca = $any($event.target).value; aplicarFiltros()" class="w-full" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Status</label>
+            <z-select [zValue]="filtroStatus" zSize="default" zPlaceholder="Todos"
+              (zSelectionChange)="onStatusChange($event)" class="text-sm">
+              <z-select-item [zValue]="''">Todos</z-select-item>
+              @for (status of statusOptions; track status) {
+              <z-select-item [zValue]="status">{{ status }}</z-select-item>
+              }
+            </z-select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Bairro</label>
+            <z-select [zValue]="filtroBairro" zSize="default" zPlaceholder="Todos"
+              (zSelectionChange)="onBairroChange($event)" class="text-sm">
+              <z-select-item [zValue]="''">Todos</z-select-item>
+              @for (bairro of bairrosOptions; track bairro) {
+              <z-select-item [zValue]="bairro">{{ bairro }}</z-select-item>
+              }
+            </z-select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Tipo</label>
+            <z-select [zValue]="filtroTipo" zSize="default" zPlaceholder="Todos"
+              (zSelectionChange)="onTipoChange($event)" class="text-sm">
+              <z-select-item [zValue]="''">Todos</z-select-item>
+              @for (tipo of tiposOptions; track tipo) {
+              <z-select-item [zValue]="tipo">{{ tipo }}</z-select-item>
+              }
+            </z-select>
+          </div>
+
+          <div class="flex items-end h-full">
+            <button z-button zSize="sm" (click)="limparFiltros()"
+              class="!bg-black !text-white hover:!bg-gray-800 !border-0 w-full">
+              Limpar
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="text-xs text-gray-400">
-        Gravidade: {{ o.gravidade }} | Status: {{ o.status }}
+
+      <div class="overflow-x-auto">
+        <table z-table class="w-full text-sm border-separate border-spacing-0">
+          <thead z-table-header>
+            <tr z-table-row>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Data
+              </th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Tipo
+              </th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Descrição
+              </th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Bairro
+              </th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-center">
+                Gravidade
+              </th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-center">
+                Status
+              </th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Secretaria
+              </th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Atualização
+              </th>
+            </tr>
+          </thead>
+          <tbody z-table-body>
+            @for (ocorrencia of paginatedOcorrencias; track ocorrencia.id) {
+            <tr z-table-row class="cursor-pointer hover:bg-gray-50 border-b border-gray-200">
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap border-b border-gray-200">
+                {{ ocorrencia.dataCriacao | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+              <td z-table-cell class="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-200">
+                <a [routerLink]="['/ocorrencias', ocorrencia.id]" class="text-inherit no-underline">
+                  {{ ocorrencia.tipoProblema }}
+                </a>
+              </td>
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-700 max-w-xs truncate border-b border-gray-200">
+                {{ ocorrencia.descricao }}
+              </td>
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
+                {{ ocorrencia.bairro }}
+              </td>
+              <td z-table-cell class="px-4 py-3 text-center border-b border-gray-200">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full" [class]="ocorrencia.gravidade >= 8 ? 'bg-red-100 text-red-800' :
+                                   ocorrencia.gravidade >= 4 ? 'bg-yellow-100 text-yellow-800' :
+                                   'bg-green-100 text-green-800'">
+                  {{ ocorrencia.gravidade }}
+                </span>
+              </td>
+              <td z-table-cell class="px-4 py-3 text-center border-b border-gray-200">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full" [class]="ocorrencia.status === 'FECHADO' || ocorrencia.status === 'Resolvido' ? 'bg-green-100 text-green-800' :
+                                   ocorrencia.status === 'EM_ANDAMENTO' || ocorrencia.status === 'Em Andamento' ? 'bg-blue-100 text-blue-800' :
+                                   'bg-gray-100 text-gray-800'">
+                  {{ ocorrencia.status }}
+                </span>
+              </td>
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-600 border-b border-gray-200">
+                {{ ocorrencia.secretariaOrigem }}
+              </td>
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-500 whitespace-nowrap border-b border-gray-200">
+                {{ ocorrencia.dataAtualizacao | date:'dd/MM/yyyy HH:mm' }}
+              </td>
+            </tr>
+            } @empty {
+            <tr z-table-row>
+              <td z-table-cell [attr.colspan]="8" class="text-center py-8 text-gray-500 text-sm">
+                Nenhuma ocorrência encontrada
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
       </div>
-    </li>
-  }
-</ul>
+
+      @if (totalPages > 0) {
+      <div class="flex items-center justify-between border-t border-gray-200 pt-4">
+        <div class="flex items-center gap-4">
+          <div class="text-sm text-gray-700">
+            Mostrando <span class="font-medium">{{ paginationInfo.start }}</span> até
+            <span class="font-medium">{{ paginationInfo.end }}</span> de
+            <span class="font-medium">{{ paginationInfo.total }}</span> ocorrências
+            @if (paginationInfo.totalPages > 1) {
+            <span class="text-gray-500">
+              (Página {{ paginationInfo.currentPage }} de {{ paginationInfo.totalPages }})
+            </span>
+            }
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-600">Itens por página:</label>
+            <z-select [zValue]="itemsPerPage.toString()" zSize="default" zPlaceholder="Selecione"
+              (zSelectionChange)="onItemsPerPageChange($event)" class="text-sm w-20">
+              @for (option of itemsPerPageOptions; track option) {
+              <z-select-item [zValue]="option.toString()">{{ option }}</z-select-item>
+              }
+            </z-select>
+          </div>
+        </div>
+
+        <div>
+          <z-pagination [zPageIndex]="currentPage" [zTotal]="totalPages" (zPageIndexChange)="onPageChange($event)" />
+        </div>
+      </div>
+      }
+    </div>
+  </z-card>
+</div>

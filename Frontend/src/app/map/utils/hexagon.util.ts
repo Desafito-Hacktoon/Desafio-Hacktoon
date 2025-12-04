@@ -87,9 +87,10 @@ export class HexagonUtil {
     const deltaLng = lng - origin[1];
     
     // Estima as coordenadas hexagonais
-    const r = Math.round(deltaLat / verticalSpacing);
+    // Usa floor/ceil para garantir que capture hexágonos nas bordas
+    const r = Math.floor(deltaLat / verticalSpacing);
     const offsetX = (r % 2) * horizontalOffset;
-    const q = Math.round((deltaLng - offsetX) / horizontalSpacing);
+    const q = Math.floor((deltaLng - offsetX) / horizontalSpacing);
     
     return { q, r };
   }
@@ -113,22 +114,45 @@ export class HexagonUtil {
     const verticalSpacing = 1.5 * hexRadiusLat;
     
     // Calcula o range de coordenadas hexagonais necessárias para cobrir os bounds
+    // Usa múltiplos pontos para garantir cobertura completa
     const topLeftHex = this.latLngToHex(bounds.north, bounds.west);
     const bottomRightHex = this.latLngToHex(bounds.south, bounds.east);
+    const topRightHex = this.latLngToHex(bounds.north, bounds.east);
+    const bottomLeftHex = this.latLngToHex(bounds.south, bounds.west);
+    const centerHex = this.latLngToHex((bounds.north + bounds.south) / 2, (bounds.east + bounds.west) / 2);
     
-    // Adiciona margem para garantir cobertura completa
-    const minQ = topLeftHex.q - 2;
-    const maxQ = bottomRightHex.q + 2;
-    const minR = bottomRightHex.r - 2;
-    const maxR = topLeftHex.r + 2;
+    // Encontra os limites reais considerando todos os pontos
+    const allQs = [topLeftHex.q, bottomRightHex.q, topRightHex.q, bottomLeftHex.q, centerHex.q];
+    const allRs = [topLeftHex.r, bottomRightHex.r, topRightHex.r, bottomLeftHex.r, centerHex.r];
+    
+    const minQ = Math.min(...allQs) - 5; // Margem maior para zoom distante
+    const maxQ = Math.max(...allQs) + 5;
+    const minR = Math.min(...allRs) - 5;
+    const maxR = Math.max(...allRs) + 5;
     
     // Gera hexágonos com coordenadas fixas
+    // Remove a verificação de interseção para garantir que todos os hexágonos no range sejam gerados
+    // A verificação de interseção pode estar muito restritiva em zooms distantes
     for (let r = minR; r <= maxR; r++) {
       for (let q = minQ; q <= maxQ; q++) {
         const center = this.hexToLatLng(q, r);
         
-        // Verifica se o hexágono intersecta com os bounds visíveis
-        if (this.hexagonIntersectsBounds(center, hexRadiusLat, hexRadiusLng, bounds)) {
+        // Verificação simplificada: apenas verifica se o centro está próximo dos bounds
+        // Isso garante que hexágonos sejam gerados mesmo em zooms distantes
+        const centerLat = center[0];
+        const centerLng = center[1];
+        
+        // Expande os bounds com uma margem generosa baseada no tamanho do hexágono
+        const marginLat = hexRadiusLat * 2;
+        const marginLng = hexRadiusLng * 2;
+        
+        const isVisible = 
+          centerLat >= bounds.south - marginLat &&
+          centerLat <= bounds.north + marginLat &&
+          centerLng >= bounds.west - marginLng &&
+          centerLng <= bounds.east + marginLng;
+        
+        if (isVisible) {
           const coordinates = this.generateHexagonCoordinates(
             center,
             hexRadiusLat,
@@ -201,6 +225,7 @@ export class HexagonUtil {
 
   /**
    * Verifica se um hexágono intersecta com os bounds
+   * Versão mais permissiva para garantir que hexágonos apareçam em todos os zooms
    */
   private static hexagonIntersectsBounds(
     center: [number, number],
@@ -211,11 +236,11 @@ export class HexagonUtil {
     const [centerLat, centerLng] = center;
     
     // Verifica se o hexágono está dentro ou intersecta os bounds
-    // Um hexágono intersecta se seu bounding box intersecta
-    const hexMinLat = centerLat - radiusLat;
-    const hexMaxLat = centerLat + radiusLat;
-    const hexMinLng = centerLng - radiusLng;
-    const hexMaxLng = centerLng + radiusLng;
+    // Usa um bounding box expandido para garantir que hexágonos próximos sejam incluídos
+    const hexMinLat = centerLat - radiusLat * 1.5;
+    const hexMaxLat = centerLat + radiusLat * 1.5;
+    const hexMinLng = centerLng - radiusLng * 1.5;
+    const hexMaxLng = centerLng + radiusLng * 1.5;
     
     return !(
       hexMaxLat < bounds.south ||

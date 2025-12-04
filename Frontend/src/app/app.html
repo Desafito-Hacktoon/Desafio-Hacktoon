@@ -1,10 +1,32 @@
-<nav class="flex items-center justify-between bg-blue-600 p-4 text-white">
-  <div class="font-bold">HeatMap-app</div>
-    <ul class="flex gap-4">
-    <li><a routerLink="/mapa">Mapa</a></li>
-    <li><a routerLink="/dashboard">Dashboard</a></li>
-    <li><a routerLink="/ocorrencias">Ocorrências</a></li>
-     <li>
+<z-layout class="h-screen w-full">
+  <z-sidebar [zWidth]="256" class="!bg-gray-50 !h-full !p-0 custom-sidebar">
+    <div class="px-4 h-[75px] flex items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-[#135ce4] text-white flex items-center justify-center flex-shrink-0">
+          <z-icon zType="file-text" class="text-xl"></z-icon>
+        </div>
+        <span class="text-lg font-semibold text-slate-900 whitespace-nowrap">MapBlu</span>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-auto px-4 py-4">
+      <z-sidebar-group>
+        <a routerLink="/dashboard" routerLinkActive="active"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-900 no-underline text-sm font-medium transition-all duration-200 cursor-pointer hover:bg-gray-100 active:bg-slate-900 active:text-white">
+          <z-icon zType="layout-dashboard" class="flex-shrink-0"></z-icon>
+          <span>Dashboard</span>
+        </a>
+        <a routerLink="/mapa" routerLinkActive="active"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-900 no-underline text-sm font-medium transition-all duration-200 cursor-pointer hover:bg-gray-100 active:bg-slate-900 active:text-white">
+          <z-icon zType="layers" class="flex-shrink-0"></z-icon>
+          <span>Mapa</span>
+        </a>
+        <a routerLink="/ocorrencias" routerLinkActive="active"
+          class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-900 no-underline text-sm font-medium transition-all duration-200 cursor-pointer hover:bg-gray-100 active:bg-slate-900 active:text-white">
+          <z-icon zType="file-text" class="flex-shrink-0"></z-icon>
+          <span>Ocorrências</span>
+        </a>
+        <li>
          @if(auth.isLoggedIn()){
          <button (click)="auth.logout()" class="bg-red-500 px-3 py-1 rounded hover:bg-red-600">
              Logout
@@ -15,7 +37,38 @@
                 </a>
          }
      </li>
-  </ul>
-</nav>
-<router-outlet></router-outlet>
+      </z-sidebar-group>
+    </div>
+  </z-sidebar>
 
+  <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
+    <z-header [zHeight]="75" class="!bg-gray-50 custom-header">
+      <div class="flex items-center justify-between px-4 w-full h-full">
+        <div class="flex items-center gap-3 h-full">
+          <h1 class="text-lg font-semibold text-slate-900 m-0">
+            {{ currentPageTitle() }}
+          </h1>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <button class="p-2 rounded-lg hover:bg-gray-200 transition-colors">
+            <z-icon zType="bell" class="text-gray-600"></z-icon>
+          </button>
+          <button class="p-2 rounded-lg hover:bg-gray-200 transition-colors">
+            <z-icon zType="clock" class="text-gray-600"></z-icon>
+          </button>
+        </div>
+      </div>
+    </z-header>
+
+    <z-content class="!bg-white !min-h-0 flex-1 overflow-hidden !p-0">
+      <div class="h-full w-full max-w-[1400px] border border-gray-200 rounded-tl-lg overflow-hidden">
+        <div class="h-full overflow-auto">
+          <div class="p-6">
+            <router-outlet></router-outlet>
+          </div>
+        </div>
+      </div>
+    </z-content>
+  </div>
+</z-layout>
