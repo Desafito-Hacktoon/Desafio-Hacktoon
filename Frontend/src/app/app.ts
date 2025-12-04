@@ -5,8 +5,10 @@ import { MapModule } from './map/map.module';
 import { LayoutComponent } from './shared/components/layout/layout.component';
 import { HeaderComponent as ZHeaderComponent } from './shared/components/layout/header.component';
 import { ContentComponent } from './shared/components/layout/content.component';
-import { SidebarComponent as ZSidebarComponent, SidebarGroupComponent, SidebarGroupLabelComponent } from './shared/components/layout/sidebar.component';
+import { SidebarComponent as ZSidebarComponent, SidebarGroupComponent } from './shared/components/layout/sidebar.component';
 import { ZardIconComponent } from './shared/components/icon/icon.component';
+import { ZardButtonComponent } from './shared/components/button/button.component';
+import { UserMenuComponent } from './shared/components/user-menu/user-menu.component';
 import {AuthService} from "./auth/service/auth";
 
 
@@ -22,7 +24,9 @@ import {AuthService} from "./auth/service/auth";
     ContentComponent,
     ZSidebarComponent,
     SidebarGroupComponent,
-    ZardIconComponent
+    ZardIconComponent,
+    ZardButtonComponent,
+    UserMenuComponent
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.css']
@@ -37,7 +41,10 @@ export class App {
     '/ocorrencias': 'Ocorrências'
   };
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    public auth: AuthService
+  ) {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
@@ -48,5 +55,4 @@ export class App {
     const currentUrl = this.router.url;
     this.currentPageTitle.set(this.pageTitles[currentUrl] || 'Dashboard');
   }
-  constructor(public auth: AuthService) {}
 }

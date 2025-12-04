@@ -1,7 +1,9 @@
-import {Component, OnInit, computed, signal} from '@angular/core';
+import {Component, OnInit, computed, signal, inject} from '@angular/core';
 import {DatePipe, NgClass, CommonModule} from '@angular/common';
 import {DashboardService} from '../dashboardService/dashboard-service';
-import {Ocorrencia} from '../../models/Ocorrencia';
+import {DashboardStatsResponse, PeriodoSelecionado} from '../../models/dashboard.models';
+import {OcorrenciaFilterRequest, OcorrenciaResponse} from '../../models/ocorrencia.models';
+import {OcorreciasService} from '../../ocorrencias/ocorrenciasService/ocorrecias-service';
 import colors = require('tailwindcss/colors');
 import {Piechart} from '../../models/piechart';
 import {
@@ -44,14 +46,13 @@ import {FormsModule} from '@angular/forms';
     ZardCardComponent,
     ZardPieChartComponent,
     ZardLineChartComponent,
-    ZardDatePickerComponent,
   ],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
 })
 export class Dashboard implements OnInit {
-  ocorrenciasOriginais = signal<Ocorrencia[]>([]);
-  ocorrencias = signal<Ocorrencia[]>([]);
+  ocorrenciasOriginais = signal<OcorrenciaResponse[]>([]);
+  ocorrencias = signal<OcorrenciaResponse[]>([]);
   currentPage = signal(1);
   itemsPerPage = signal(5);
   itemsPerPageOptions = [5, 10, 20, 50];
@@ -75,9 +76,25 @@ export class Dashboard implements OnInit {
   lineChartData!: LineChartData;
   lineChartOptions: any;
   
-  // Filtros de período para o gráfico de linha
-  dataInicio = signal<Date | null>(null);
-  dataFim = signal<Date | null>(null);
+  // Período selecionado para os cards e gráficos
+  periodoSelecionado = signal<PeriodoSelecionado>('esse-mes');
+  
+  // Opções de período
+  periodosOptions: { value: PeriodoSelecionado; label: string }[] = [
+    { value: 'hoje', label: 'Hoje' },
+    { value: 'ontem', label: 'Ontem' },
+    { value: 'essa-semana', label: 'Essa Semana' },
+    { value: 'esse-mes', label: 'Esse Mês' },
+    { value: 'ultimos-90-dias', label: 'Últimos 90 Dias' },
+    { value: 'ultimo-ano', label: 'Último Ano' }
+  ];
+  
+  // Label do período selecionado
+  periodoSelecionadoLabel = computed(() => {
+    const periodo = this.periodoSelecionado();
+    const option = this.periodosOptions.find(p => p.value === periodo);
+    return option?.label || 'Período';
+  });
   
   // Opções para os selects
   statusOptions = ['ABERTO', 'EM_ANDAMENTO', 'FECHADO'];
@@ -90,53 +107,40 @@ export class Dashboard implements OnInit {
     return Array.from(tipos).sort();
   });
 
-  // Métricas para os cards
+  // Estatísticas do backend
+  dashboardStats = signal<DashboardStatsResponse | null>(null);
+  isLoadingStats = signal(false);
+
+  // Métricas para os cards (usando dados do backend quando disponível)
   totalOcorrencias = computed(() => {
-    return this.ocorrenciasOriginais().length;
+    return this.dashboardStats()?.totalOcorrencias ?? this.ocorrenciasOriginais().length;
   });
 
   ocorrenciasCriticas = computed(() => {
-    return this.ocorrenciasOriginais().filter(oc => oc.gravidade >= 8).length;
+    return this.dashboardStats()?.ocorrenciasCriticas ?? this.ocorrenciasOriginais().filter(oc => oc.gravidade >= 8).length;
   });
 
   ocorrenciasEmAndamento = computed(() => {
-    return this.ocorrenciasOriginais().filter(oc => 
-      oc.status === 'EM_ANDAMENTO' || oc.status === 'Em Andamento'
+    return this.dashboardStats()?.ocorrenciasEmAndamento ?? this.ocorrenciasOriginais().filter(oc => 
+      oc.status === 'EM_ANDAMENTO'
     ).length;
   });
 
   constructor(
     private dashboardService: DashboardService,
+    private ocorrenciasService: OcorreciasService,
     private router: Router
   ) {}
 
   ngOnInit() {
-    this.dashboardService.getDashboardData().subscribe(data => {
-      const hoje = new Date();
-      const mesAtual = hoje.getMonth();
-      const anoAtual = hoje.getFullYear();
+    // Carregar estatísticas do dashboard com período padrão (esse mês)
+    this.carregarEstatisticas();
 
-      const ocorrenciasFiltradas = data.filter((oc: Ocorrencia) => {
-        const dataCriacao = new Date(oc.dataCriacao);
-        return dataCriacao.getMonth() === mesAtual && dataCriacao.getFullYear() === anoAtual;
-      });
-      
-      this.ocorrenciasOriginais.set(ocorrenciasFiltradas);
-      
-      // Inicializar período padrão (últimos 30 dias)
-      const dataFim = new Date();
-      const dataInicio = new Date();
-      dataInicio.setDate(dataInicio.getDate() - 30);
-      
-      this.dataFim.set(dataFim);
-      this.dataInicio.set(dataInicio);
-      
-      this.aplicarFiltros();
-      this.atualizarGraficos();
-    });
+    // Carregar ocorrências do período selecionado
+    this.carregarOcorrencias();
   }
 
-  get ocorrenciasDoMes(): Ocorrencia[] {
+  get ocorrenciasDoMes(): OcorrenciaResponse[] {
     return this.ocorrencias();
   }
 
@@ -147,10 +151,10 @@ export class Dashboard implements OnInit {
     if (busca) {
       ocorrenciasFiltradas = ocorrenciasFiltradas.filter(oc => 
         oc.tipoProblema.toLowerCase().includes(busca) ||
-        oc.descricao.toLowerCase().includes(busca) ||
+        (oc.descricao?.toLowerCase() || '').includes(busca) ||
         oc.bairro.toLowerCase().includes(busca) ||
-        oc.endereco.toLowerCase().includes(busca) ||
-        oc.secretariaOrigem.toLowerCase().includes(busca)
+        (oc.endereco?.toLowerCase() || '').includes(busca) ||
+        (oc.secretariaOrigem?.toLowerCase() || '').includes(busca)
       );
     }
     
@@ -235,7 +239,17 @@ export class Dashboard implements OnInit {
 
   atualizarGraficos() {
     const ocorrencias = this.ocorrencias();
+    const stats = this.dashboardStats();
     
+    // Se temos estatísticas do backend, usar elas (mais eficiente)
+    if (stats) {
+      this.atualizarGraficosComStats(stats);
+      // Ainda atualizar gráfico de linha com ocorrências filtradas
+      this.atualizarGraficoLinha();
+      return;
+    }
+    
+    // Fallback: calcular a partir das ocorrências locais
     // Gráfico por tipo de problema
     const tipos = ocorrencias.reduce((acc, oc) => {
       acc[oc.tipoProblema] = (acc[oc.tipoProblema] || 0) + 1;
@@ -251,7 +265,7 @@ export class Dashboard implements OnInit {
       return acc;
     }, {} as Record<string, number>);
 
-    this.pieData2 = this.gerarPieData(bairros,['#9C27B0', '#FF9800', '#03A9F4', '#8BC34A']);
+    this.pieData2 = this.gerarPieData(bairros, ['#9C27B0', '#FF9800', '#03A9F4', '#8BC34A']);
     this.pieOptions2 = this.gerarPieOptions();
 
     // Gráfico por status
@@ -265,28 +279,29 @@ export class Dashboard implements OnInit {
     
     this.atualizarGraficoLinha();
   }
+
+  private atualizarGraficosComStats(stats: DashboardStatsResponse) {
+    this.pieData = this.gerarPieData(stats.ocorrenciasPorTipo, ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#9966FF']);
+    this.pieOptions = this.gerarPieOptions();
+
+    this.pieData2 = this.gerarPieData(stats.ocorrenciasPorBairro, ['#9C27B0', '#FF9800', '#03A9F4', '#8BC34A']);
+    this.pieOptions2 = this.gerarPieOptions();
+
+    this.pieData3 = this.gerarPieData(stats.ocorrenciasPorStatus, ['#009688', '#f44335', '#ffc107', '#2196F3', '#FF9800', '#4CAF50']);
+    this.pieOptions3 = this.gerarPieOptions();
+  }
   
   atualizarGraficoLinha() {
-    const dataInicio = this.dataInicio();
-    const dataFim = this.dataFim();
+    const periodo = this.calcularPeriodo(this.periodoSelecionado());
+    const dataInicio = periodo.inicio;
+    const dataFim = periodo.fim;
     
     let ocorrenciasFiltradas = [...this.ocorrenciasOriginais()];
     
-    if (dataInicio) {
-      ocorrenciasFiltradas = ocorrenciasFiltradas.filter(oc => {
-        const dataCriacao = new Date(oc.dataCriacao);
-        return dataCriacao >= dataInicio;
-      });
-    }
-    
-    if (dataFim) {
-      const fimComHora = new Date(dataFim);
-      fimComHora.setHours(23, 59, 59, 999); // Incluir o dia inteiro
-      ocorrenciasFiltradas = ocorrenciasFiltradas.filter(oc => {
-        const dataCriacao = new Date(oc.dataCriacao);
-        return dataCriacao <= fimComHora;
-      });
-    }
+    ocorrenciasFiltradas = ocorrenciasFiltradas.filter(oc => {
+      const dataCriacao = new Date(oc.dataCriacao);
+      return dataCriacao >= dataInicio && dataCriacao <= dataFim;
+    });
     
     const ocorrenciasPorDia = ocorrenciasFiltradas.reduce((acc, oc) => {
       const dataCriacao = new Date(oc.dataCriacao);
@@ -295,19 +310,14 @@ export class Dashboard implements OnInit {
       return acc;
     }, {} as Record<string, number>);
     
+    // Gerar todas as datas do período
     const todasAsDatas: string[] = [];
-    if (dataInicio && dataFim) {
-      const dataAtual = new Date(dataInicio);
-      const fim = new Date(dataFim);
-      
-      while (dataAtual <= fim) {
-        todasAsDatas.push(this.formatarData(new Date(dataAtual)));
-        dataAtual.setDate(dataAtual.getDate() + 1);
-      }
-    } else {
-      // Se não houver período definido, usar todas as datas das ocorrências
-      const datasUnicas = Object.keys(ocorrenciasPorDia).sort();
-      todasAsDatas.push(...datasUnicas);
+    const dataAtual = new Date(dataInicio);
+    const fim = new Date(dataFim);
+    
+    while (dataAtual <= fim) {
+      todasAsDatas.push(this.formatarData(new Date(dataAtual)));
+      dataAtual.setDate(dataAtual.getDate() + 1);
     }
     
     const labels = todasAsDatas.map(data => {
@@ -391,20 +401,6 @@ export class Dashboard implements OnInit {
     const ano = data.getFullYear();
     return `${dia}/${mes}/${ano}`;
   }
-  
-  onPeriodoChange() {
-    this.atualizarGraficoLinha();
-  }
-  
-  onDataInicioChange(date: Date | null) {
-    this.dataInicio.set(date);
-    this.onPeriodoChange();
-  }
-  
-  onDataFimChange(date: Date | null) {
-    this.dataFim.set(date);
-    this.onPeriodoChange();
-  }
 
     private gerarPieData(obj: Record<string, number>, color:string[]):Piechart{
       return {
@@ -421,12 +417,180 @@ export class Dashboard implements OnInit {
   private gerarPieOptions() {
     return {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
-          position: 'bottom', // posição da legenda: top, left, right, bottom
+          display: false, // Remove a legenda
         },
+        tooltip: {
+          enabled: true,
+          callbacks: {
+            label: (context: any) => {
+              const label = context.label || '';
+              const value = context.parsed || 0;
+              const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
+              const percentage = ((value / total) * 100).toFixed(1);
+              return `${label}: ${value} (${percentage}%)`;
+            }
+          },
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleColor: '#fff',
+          bodyColor: '#fff',
+          borderColor: 'rgba(255, 255, 255, 0.1)',
+          borderWidth: 1,
+          padding: 12,
+          displayColors: true,
+          boxPadding: 6
+        }
       }
     };
+  }
+
+  /**
+   * Calcula as datas de início e fim baseado no período selecionado
+   * Retorna datas no timezone local, mas formatadas para UTC para evitar problemas
+   */
+  private calcularPeriodo(periodo: PeriodoSelecionado): { inicio: Date; fim: Date } {
+    const agora = new Date();
+    const inicio = new Date();
+    const fim = new Date();
+    
+    // Resetar horas para início do dia
+    inicio.setHours(0, 0, 0, 0);
+    fim.setHours(23, 59, 59, 999);
+    
+    switch (periodo) {
+      case 'hoje':
+        // Já está configurado acima
+        break;
+        
+      case 'ontem':
+        inicio.setDate(inicio.getDate() - 1);
+        fim.setDate(fim.getDate() - 1);
+        break;
+        
+      case 'essa-semana':
+        // Segunda-feira da semana atual
+        const diaSemana = inicio.getDay(); // 0 = domingo, 1 = segunda, ..., 6 = sábado
+        const diasParaSegunda = diaSemana === 0 ? -6 : 1 - diaSemana;
+        inicio.setDate(inicio.getDate() + diasParaSegunda);
+        break;
+        
+      case 'esse-mes':
+        inicio.setDate(1); // Primeiro dia do mês
+        break;
+        
+      case 'ultimos-90-dias':
+        inicio.setDate(inicio.getDate() - 90);
+        break;
+        
+      case 'ultimo-ano':
+        inicio.setFullYear(inicio.getFullYear() - 1);
+        inicio.setMonth(0, 1); // Janeiro do ano passado
+        inicio.setDate(1);
+        break;
+    }
+    
+    return { inicio, fim };
+  }
+
+  /**
+   * Formata uma data para o formato ISO 8601 esperado pelo Spring Boot
+   * Formato: yyyy-MM-ddTHH:mm:ss
+   * IMPORTANTE: Usa a HORA LOCAL do navegador.
+   * Isso garante que se o usuário pede "Hoje a partir das 00:00", enviamos "00:00",
+   * alinhando com o banco de dados que provavelmente armazena a data/hora local de criação.
+   */
+  private formatarDataParaAPI(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  }
+
+  /**
+   * Carrega ocorrências do período selecionado usando o endpoint de ocorrências com filtros
+   */
+  carregarOcorrencias() {
+    const periodo = this.calcularPeriodo(this.periodoSelecionado());
+    
+    // Formatar datas no formato esperado pelo backend (sem timezone, usando horário local)
+    const dataInicioFormatada = this.formatarDataParaAPI(periodo.inicio);
+    const dataFimFormatada = this.formatarDataParaAPI(periodo.fim);
+    
+    // Usar o endpoint de ocorrências com filtros de data
+    const filtros: OcorrenciaFilterRequest = {
+      dataInicio: dataInicioFormatada,
+      dataFim: dataFimFormatada
+    };
+    
+    // Buscar todas as ocorrências do período (usando tamanho grande para pegar todas)
+    this.ocorrenciasService.listar(filtros, 0, 1000, 'dataCriacao', 'DESC').subscribe({
+      next: (response) => {
+        this.ocorrenciasOriginais.set(response.content);
+        this.aplicarFiltros();
+      },
+      error: (error) => {
+        console.error('❌ Erro ao carregar ocorrências:', error);
+        console.error('Detalhes do erro:', {
+          message: error.message,
+          status: error.status,
+          statusText: error.statusText,
+          error: error.error,
+          url: error.url
+        });
+        // Limpar ocorrências em caso de erro
+        this.ocorrenciasOriginais.set([]);
+        this.ocorrencias.set([]);
+      }
+    });
+  }
+
+  /**
+   * Carrega estatísticas do dashboard com o período selecionado
+   */
+  carregarEstatisticas() {
+    this.isLoadingStats.set(true);
+    const periodo = this.calcularPeriodo(this.periodoSelecionado());
+    
+    // Usar as datas formatadas para UTC (mesmo formato usado em carregarOcorrencias)
+    const dataInicioFormatada = this.formatarDataParaAPI(periodo.inicio);
+    const dataFimFormatada = this.formatarDataParaAPI(periodo.fim);
+
+    this.dashboardService.getDashboardStats(dataInicioFormatada, dataFimFormatada).subscribe({
+      next: (stats) => {
+        this.dashboardStats.set(stats);
+        this.isLoadingStats.set(false);
+        // Atualizar gráficos com dados do backend
+        this.atualizarGraficosComStats(stats);
+      },
+      error: (error) => {
+        console.error('Erro ao carregar estatísticas:', error);
+        console.error('Detalhes do erro:', {
+          message: error.message,
+          status: error.status,
+          error: error.error
+        });
+        this.isLoadingStats.set(false);
+      }
+    });
+  }
+
+  /**
+   * Handler para mudança de período
+   */
+  onPeriodoChange(value: string | string[]) {
+    const periodo = Array.isArray(value) ? value[0] : value;
+    this.periodoSelecionado.set(periodo as PeriodoSelecionado);
+    // Recarregar tanto estatísticas quanto ocorrências
+    this.carregarEstatisticas();
+    this.carregarOcorrencias();
+    // Atualizar gráfico de linha com o novo período
+    this.atualizarGraficoLinha();
   }
 }
 

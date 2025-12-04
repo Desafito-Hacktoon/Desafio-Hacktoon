@@ -82,8 +82,6 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
           
           const key = `${point[0].toFixed(4)}_${point[1].toFixed(4)}`;
           
-          console.log(`Carregando ocorrência: ponto [${point[0]}, ${point[1]}], count: ${feature.properties?.occurrenceCount || 0}`);
-          
           this.occurrenceData.set(key, {
             count: feature.properties?.occurrenceCount || 0,
             intensity: feature.properties?.intensity || 0,
@@ -91,8 +89,6 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
           });
         }
       });
-      
-      console.log(`Total de ${this.occurrenceData.size} ocorrências carregadas`);
 
       // Gera a grade hexagonal após carregar os dados
       this.updateHexagonGrid();
@@ -129,20 +125,10 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
       },
       hexSize: 200 // Não usado diretamente, mas mantido para compatibilidade
     });
-    
-    console.log(`Zoom: ${zoom}, Bounds expandidos:`, { 
-      north: north + margin, 
-      south: south - margin, 
-      east: east + margin, 
-      west: west - margin 
-    });
 
     // Encontra ocorrências para cada hexágono baseado na localização geográfica
     // Usa coordenadas fixas para garantir que cada ocorrência sempre pertence ao mesmo hexágono
     const hexagonOccurrences = new Map<string, number>();
-    
-    console.log('Total de ocorrências carregadas:', this.occurrenceData.size);
-    console.log('Total de hexágonos gerados:', hexagons.length);
     
     this.occurrenceData.forEach((data, key) => {
       // Tenta encontrar o hexágono que contém este ponto usando a lista de hexágonos gerados
@@ -156,21 +142,14 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
       if (containingHex) {
         const current = hexagonOccurrences.get(containingHex.id) || 0;
         hexagonOccurrences.set(containingHex.id, current + data.count);
-        console.log(`Ocorrência em ${data.point} atribuída ao hexágono ${containingHex.id}, total: ${current + data.count}`);
-      } else {
-        console.warn(`Não foi possível encontrar hexágono para ocorrência em ${data.point}`);
       }
     });
-    
-    console.log('Hexágonos com ocorrências:', hexagonOccurrences.size);
 
     // Encontra o máximo de ocorrências para normalizar cores
     const maxOccurrences = Math.max(
       ...Array.from(hexagonOccurrences.values()),
       1
     );
-
-    console.log('Máximo de ocorrências:', maxOccurrences);
     
     // Renderiza cada hexágono
     hexagons.forEach(hex => {
@@ -180,10 +159,6 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
         : 0;
       
       const color = HexagonUtil.getColorByIntensity(intensity);
-      
-      if (count > 0) {
-        console.log(`Hexágono ${hex.id}: ${count} ocorrências, intensidade: ${intensity}, cor: ${color}`);
-      }
       
       // Cria o polígono do hexágono
       // Bordas brancas finas para separação visual, mas hexágonos estão perfeitamente colados

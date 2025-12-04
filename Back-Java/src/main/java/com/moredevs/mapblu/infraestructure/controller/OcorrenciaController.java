@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static com.moredevs.mapblu.shared.constant.Constants.Pagination;
@@ -29,6 +31,7 @@ import static com.moredevs.mapblu.shared.constant.Constants.Pagination;
  * Controller REST para operações de ocorrências.
  */
 @Tag(name = "Ocorrências", description = "API para gerenciamento de ocorrências municipais")
+@Slf4j
 @RestController
 @RequestMapping("/api/ocorrencias")
 @RequiredArgsConstructor
@@ -59,17 +62,43 @@ public class OcorrenciaController {
             @RequestParam(required = false) StatusOcorrencia status,
             @RequestParam(required = false) Integer gravidadeMin,
             @RequestParam(required = false) Integer gravidadeMax,
+            @Parameter(description = "Data de início do período (formato: yyyy-MM-ddTHH:mm:ss)")
+            @RequestParam(required = false) String dataInicio,
+            @Parameter(description = "Data de fim do período (formato: yyyy-MM-ddTHH:mm:ss)")
+            @RequestParam(required = false) String dataFim,
             @RequestParam(defaultValue = "" + Pagination.DEFAULT_PAGE) int page,
             @RequestParam(defaultValue = "" + Pagination.DEFAULT_SIZE) int size,
             @RequestParam(defaultValue = Pagination.DEFAULT_SORT) String sortBy,
             @RequestParam(defaultValue = Pagination.DEFAULT_DIRECTION) String sortDir
     ) {
+        // Parse manual das datas para garantir formato correto
+        LocalDateTime dataInicioParsed = null;
+        LocalDateTime dataFimParsed = null;
+        
+        if (dataInicio != null && !dataInicio.isEmpty()) {
+            try {
+                dataInicioParsed = LocalDateTime.parse(dataInicio);
+            } catch (Exception e) {
+                log.error("Erro ao parsear dataInicio '{}': {}", dataInicio, e.getMessage());
+            }
+        }
+        
+        if (dataFim != null && !dataFim.isEmpty()) {
+            try {
+                dataFimParsed = LocalDateTime.parse(dataFim);
+            } catch (Exception e) {
+                log.error("Erro ao parsear dataFim '{}': {}", dataFim, e.getMessage());
+            }
+        }
+        
         OcorrenciaFilterRequest filtros = OcorrenciaFilterRequest.builder()
                 .tipoProblema(tipoProblema)
                 .bairro(bairro)
                 .status(status)
                 .gravidadeMin(gravidadeMin)
                 .gravidadeMax(gravidadeMax)
+                .dataInicio(dataInicioParsed)
+                .dataFim(dataFimParsed)
                 .build();
 
         Sort sort = sortDir.equalsIgnoreCase("ASC") 
@@ -79,6 +108,7 @@ public class OcorrenciaController {
         Pageable pageable = PageRequest.of(page, size, sort);
         
         PagedResponse<OcorrenciaResponse> response = service.listar(filtros, pageable);
+        
         return ResponseEntity.ok(response);
     }
 

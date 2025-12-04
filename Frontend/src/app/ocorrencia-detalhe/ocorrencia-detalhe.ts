@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {OcorreciasService} from '../ocorrencias/ocorrenciasService/ocorrecias-service';
-import {Ocorrencia} from '../models/Ocorrencia';
+import {OcorrenciaResponse} from '../models/ocorrencia.models';
 import {Ocorrencias} from '../ocorrencias/ocorrencias.component/ocorrencias';
 
 @Component({
@@ -11,7 +11,7 @@ import {Ocorrencias} from '../ocorrencias/ocorrencias.component/ocorrencias';
   styleUrl: './ocorrencia-detalhe.css',
 })
 export class OcorrenciaDetalhe implements OnInit {
-    ocorrencias?:Ocorrencia;
+    ocorrencias?:OcorrenciaResponse;
 
     constructor(
       private route: ActivatedRoute,
@@ -20,9 +20,20 @@ export class OcorrenciaDetalhe implements OnInit {
 
   ngOnInit() {
       const id = this.route.snapshot.paramMap.get('id');
-      this.ocorrenciasService.getOcorrenciasData().subscribe((data:Ocorrencia[]) => {
-        this.ocorrencias = data.find((o: Ocorrencia) => o.id == id);
+    if (id) {
+      this.ocorrenciasService.buscarPorId(id).subscribe({
+        next: (ocorrencia) => {
+          this.ocorrencias = ocorrencia;
+        },
+        error: (error) => {
+          console.error('Erro ao buscar ocorrência:', error);
+          // Fallback para método antigo se necessário
+          this.ocorrenciasService.getOcorrenciasData().subscribe((data: OcorrenciaResponse[]) => {
+            this.ocorrencias = data.find((o: OcorrenciaResponse) => o.id === id);
       });
+        }
+      });
+    }
   }
 
   protected readonly Ocorrencias = Ocorrencias;

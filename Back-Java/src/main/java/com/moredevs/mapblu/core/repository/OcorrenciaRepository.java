@@ -21,27 +21,44 @@ import java.util.UUID;
 public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, UUID> {
 
     /**
-     * Busca ocorrências com filtros opcionais.
+     * Busca ocorrências com filtros opcionais incluindo filtro de data.
      * 
      * @param tipoProblema filtro por tipo de problema (opcional)
      * @param bairro filtro por bairro (opcional)
      * @param status filtro por status (opcional)
      * @param gravidadeMin filtro por gravidade mínima (opcional)
+     * @param gravidadeMax filtro por gravidade máxima (opcional)
+     * @param dataInicio filtro por data de início (opcional)
+     * @param dataFim filtro por data de fim (opcional)
      * @param pageable paginação e ordenação
      * @return página de ocorrências filtradas
      */
-    @Query("SELECT o FROM Ocorrencia o WHERE " +
-           "(:tipoProblema IS NULL OR o.tipoProblema = :tipoProblema) AND " +
-           "(:bairro IS NULL OR LOWER(o.bairro) LIKE LOWER(CONCAT('%', :bairro, '%'))) AND " +
-           "(:status IS NULL OR o.status = :status) AND " +
-           "(:gravidadeMin IS NULL OR o.gravidade >= :gravidadeMin) AND " +
-           "(:gravidadeMax IS NULL OR o.gravidade <= :gravidadeMax)")
+    @Query(value = "SELECT * FROM ocorrencias o WHERE " +
+           "(CAST(:tipoProblema AS VARCHAR) IS NULL OR o.tipo_problema = CAST(:tipoProblema AS VARCHAR)) AND " +
+           "(CAST(:bairro AS VARCHAR) IS NULL OR o.bairro ILIKE '%' || CAST(:bairro AS VARCHAR) || '%') AND " +
+           "(CAST(:status AS VARCHAR) IS NULL OR o.status = CAST(:status AS VARCHAR)) AND " +
+           "(CAST(:gravidadeMin AS INTEGER) IS NULL OR o.gravidade >= CAST(:gravidadeMin AS INTEGER)) AND " +
+           "(CAST(:gravidadeMax AS INTEGER) IS NULL OR o.gravidade <= CAST(:gravidadeMax AS INTEGER)) AND " +
+           "(CAST(:dataInicio AS TIMESTAMP) IS NULL OR o.data_criacao >= CAST(:dataInicio AS TIMESTAMP)) AND " +
+           "(CAST(:dataFim AS TIMESTAMP) IS NULL OR o.data_criacao <= CAST(:dataFim AS TIMESTAMP)) " +
+           "ORDER BY o.data_criacao DESC",
+           countQuery = "SELECT COUNT(*) FROM ocorrencias o WHERE " +
+           "(CAST(:tipoProblema AS VARCHAR) IS NULL OR o.tipo_problema = CAST(:tipoProblema AS VARCHAR)) AND " +
+           "(CAST(:bairro AS VARCHAR) IS NULL OR o.bairro ILIKE '%' || CAST(:bairro AS VARCHAR) || '%') AND " +
+           "(CAST(:status AS VARCHAR) IS NULL OR o.status = CAST(:status AS VARCHAR)) AND " +
+           "(CAST(:gravidadeMin AS INTEGER) IS NULL OR o.gravidade >= CAST(:gravidadeMin AS INTEGER)) AND " +
+           "(CAST(:gravidadeMax AS INTEGER) IS NULL OR o.gravidade <= CAST(:gravidadeMax AS INTEGER)) AND " +
+           "(CAST(:dataInicio AS TIMESTAMP) IS NULL OR o.data_criacao >= CAST(:dataInicio AS TIMESTAMP)) AND " +
+           "(CAST(:dataFim AS TIMESTAMP) IS NULL OR o.data_criacao <= CAST(:dataFim AS TIMESTAMP))",
+           nativeQuery = true)
     Page<Ocorrencia> findByFilters(
-        @Param("tipoProblema") TipoProblema tipoProblema,
+        @Param("tipoProblema") String tipoProblema,
         @Param("bairro") String bairro,
-        @Param("status") StatusOcorrencia status,
+        @Param("status") String status,
         @Param("gravidadeMin") Integer gravidadeMin,
         @Param("gravidadeMax") Integer gravidadeMax,
+        @Param("dataInicio") java.time.LocalDateTime dataInicio,
+        @Param("dataFim") java.time.LocalDateTime dataFim,
         Pageable pageable
     );
 
@@ -51,11 +68,12 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, UUID> {
      * @param bairro filtro por bairro (opcional)
      * @return lista de arrays [TipoProblema, Long] com contagem
      */
-    @Query("SELECT o.tipoProblema, COUNT(o) FROM Ocorrencia o " +
-           "WHERE (:bairro IS NULL OR LOWER(o.bairro) LIKE LOWER(CONCAT('%', :bairro, '%'))) " +
+    @Query(value = "SELECT o.tipo_problema, COUNT(o.id) FROM ocorrencias o " +
+           "WHERE (CAST(:bairro AS VARCHAR) IS NULL OR o.bairro ILIKE '%' || CAST(:bairro AS VARCHAR) || '%') " +
            "AND o.status != 'RESOLVIDO' " +
-           "GROUP BY o.tipoProblema " +
-           "ORDER BY COUNT(o) DESC")
+           "GROUP BY o.tipo_problema " +
+           "ORDER BY COUNT(o.id) DESC",
+           nativeQuery = true)
     List<Object[]> countByTipoProblema(@Param("bairro") String bairro);
 
     /**
@@ -78,9 +96,10 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, UUID> {
      * @param bairro filtro por bairro (opcional)
      * @return gravidade média ou null se não houver ocorrências
      */
-    @Query("SELECT AVG(o.gravidade) FROM Ocorrencia o " +
-           "WHERE (:bairro IS NULL OR LOWER(o.bairro) LIKE LOWER(CONCAT('%', :bairro, '%'))) " +
-           "AND o.status != 'RESOLVIDO'")
+    @Query(value = "SELECT AVG(o.gravidade) FROM ocorrencias o " +
+           "WHERE (CAST(:bairro AS VARCHAR) IS NULL OR o.bairro ILIKE '%' || CAST(:bairro AS VARCHAR) || '%') " +
+           "AND o.status != 'RESOLVIDO'",
+           nativeQuery = true)
     Double avgGravidade(@Param("bairro") String bairro);
 
     /**
@@ -157,5 +176,114 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, UUID> {
      * @return lista de ocorrências
      */
     List<Ocorrencia> findByBairroAndTipoProblema(String bairro, TipoProblema tipoProblema);
+
+    /**
+     * Busca ocorrências do mês atual.
+     * 
+     * @param inicioMes início do mês
+     * @param fimMes fim do mês
+     * @param pageable paginação e ordenação
+     * @return página de ocorrências do mês
+     */
+    @Query("SELECT o FROM Ocorrencia o WHERE " +
+           "o.dataCriacao >= :inicioMes AND o.dataCriacao <= :fimMes " +
+           "ORDER BY o.dataCriacao DESC")
+    Page<Ocorrencia> findByDataCriacaoBetween(
+        @Param("inicioMes") java.time.LocalDateTime inicioMes,
+        @Param("fimMes") java.time.LocalDateTime fimMes,
+        Pageable pageable
+    );
+
+    /**
+     * Conta ocorrências no período especificado.
+     * 
+     * @param inicio início do período
+     * @param fim fim do período
+     * @return total de ocorrências no período
+     */
+    @Query("SELECT COUNT(o) FROM Ocorrencia o WHERE " +
+           "o.dataCriacao >= :inicio AND o.dataCriacao <= :fim")
+    long countByDataCriacaoBetween(
+        @Param("inicio") java.time.LocalDateTime inicio,
+        @Param("fim") java.time.LocalDateTime fim
+    );
+
+    /**
+     * Conta ocorrências críticas no período especificado.
+     * 
+     * @param inicio início do período
+     * @param fim fim do período
+     * @return total de ocorrências críticas no período
+     */
+    @Query("SELECT COUNT(o) FROM Ocorrencia o WHERE " +
+           "o.dataCriacao >= :inicio AND o.dataCriacao <= :fim AND " +
+           "o.gravidade >= 8")
+    long countCriticasByDataCriacaoBetween(
+        @Param("inicio") java.time.LocalDateTime inicio,
+        @Param("fim") java.time.LocalDateTime fim
+    );
+
+    /**
+     * Conta ocorrências por status no período especificado.
+     * 
+     * @param status status da ocorrência
+     * @param inicio início do período
+     * @param fim fim do período
+     * @return total de ocorrências com o status no período
+     */
+    @Query("SELECT COUNT(o) FROM Ocorrencia o WHERE " +
+           "o.status = :status AND " +
+           "o.dataCriacao >= :inicio AND o.dataCriacao <= :fim")
+    long countByStatusAndDataCriacaoBetween(
+        @Param("status") StatusOcorrencia status,
+        @Param("inicio") java.time.LocalDateTime inicio,
+        @Param("fim") java.time.LocalDateTime fim
+    );
+
+    /**
+     * Calcula a gravidade média no período especificado.
+     * 
+     * @param inicio início do período
+     * @param fim fim do período
+     * @return gravidade média ou null se não houver ocorrências
+     */
+    @Query("SELECT AVG(o.gravidade) FROM Ocorrencia o WHERE " +
+           "o.dataCriacao >= :inicio AND o.dataCriacao <= :fim AND " +
+           "o.gravidade IS NOT NULL")
+    Double avgGravidadeByDataCriacaoBetween(
+        @Param("inicio") java.time.LocalDateTime inicio,
+        @Param("fim") java.time.LocalDateTime fim
+    );
+
+    /**
+     * Conta ocorrências por tipo no período especificado.
+     * 
+     * @param inicio início do período
+     * @param fim fim do período
+     * @return lista de arrays [TipoProblema, Long] com contagem
+     */
+    @Query("SELECT o.tipoProblema, COUNT(o) FROM Ocorrencia o WHERE " +
+           "o.dataCriacao >= :inicio AND o.dataCriacao <= :fim " +
+           "GROUP BY o.tipoProblema " +
+           "ORDER BY COUNT(o) DESC")
+    List<Object[]> countByTipoProblemaAndDataCriacaoBetween(
+        @Param("inicio") java.time.LocalDateTime inicio,
+        @Param("fim") java.time.LocalDateTime fim
+    );
+
+    /**
+     * Busca todas as ocorrências do período (sem paginação).
+     * 
+     * @param inicio início do período
+     * @param fim fim do período
+     * @return lista de ocorrências do período
+     */
+    @Query("SELECT o FROM Ocorrencia o WHERE " +
+           "o.dataCriacao >= :inicio AND o.dataCriacao <= :fim " +
+           "ORDER BY o.dataCriacao DESC")
+    List<Ocorrencia> findAllByDataCriacaoBetween(
+        @Param("inicio") java.time.LocalDateTime inicio,
+        @Param("fim") java.time.LocalDateTime fim
+    );
 }
 

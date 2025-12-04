@@ -14,7 +14,7 @@ import {ZardCardComponent} from '@shared/components/card/card.component';
 import {ZardPaginationComponent} from '@shared/components/pagination/pagination.component';
 import {ZardSelectComponent} from '@shared/components/select/select.component';
 import {ZardSelectItemComponent} from '@shared/components/select/select-item.component';
-import {Ocorrencia} from '../../models/Ocorrencia';
+import {OcorrenciaResponse} from '../../models/ocorrencia.models';
 import {ZardInputDirective} from '@shared/components/input/input.directive';
 
 @Component({
@@ -39,8 +39,8 @@ import {ZardInputDirective} from '@shared/components/input/input.directive';
 })
 export class Ocorrencias implements OnInit {
   // dados base e filtrados
-  ocorrenciasOriginais: Ocorrencia[] = [];
-  ocorrencias: Ocorrencia[] = [];
+  ocorrenciasOriginais: OcorrenciaResponse[] = [];
+  ocorrencias: OcorrenciaResponse[] = [];
 
   // paginação
   currentPage = 1;
@@ -64,7 +64,7 @@ export class Ocorrencias implements OnInit {
     });
   }
 
-  get paginatedOcorrencias(): Ocorrencia[] {
+  get paginatedOcorrencias(): OcorrenciaResponse[] {
     const start = (this.currentPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
     return this.ocorrencias.slice(start, end);
@@ -104,10 +104,10 @@ export class Ocorrencias implements OnInit {
     if (busca) {
       filtradas = filtradas.filter(oc =>
         oc.tipoProblema.toLowerCase().includes(busca) ||
-        oc.descricao.toLowerCase().includes(busca) ||
+        (oc.descricao?.toLowerCase() || '').includes(busca) ||
         oc.bairro.toLowerCase().includes(busca) ||
-        oc.endereco.toLowerCase().includes(busca) ||
-        oc.secretariaOrigem.toLowerCase().includes(busca),
+        (oc.endereco?.toLowerCase() || '').includes(busca) ||
+        (oc.secretariaOrigem?.toLowerCase() || '').includes(busca),
       );
     }
 

@@ -23,7 +23,7 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration}")
+    @Value("${jwt.expiration:86400000}")
     private Long expiration;
 
     /**
@@ -66,7 +66,8 @@ public class JwtService {
      * @return token JWT
      */
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return buildToken(extraClaims, userDetails, expiration);
+        long expirationTime = expiration != null ? expiration : 86400000L;
+        return buildToken(extraClaims, userDetails, expirationTime);
     }
 
     /**
@@ -143,7 +144,13 @@ public class JwtService {
      * @return chave secreta
      */
     private SecretKey getSigningKey() {
+        if (secret == null || secret.trim().isEmpty()) {
+            throw new IllegalStateException("JWT secret não configurado. Configure a propriedade jwt.secret");
+        }
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("JWT secret deve ter no mínimo 32 caracteres para segurança adequada");
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

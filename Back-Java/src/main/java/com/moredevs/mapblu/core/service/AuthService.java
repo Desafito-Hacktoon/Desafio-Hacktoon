@@ -30,7 +30,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    @org.springframework.beans.factory.annotation.Value("${jwt.expiration}")
+    @org.springframework.beans.factory.annotation.Value("${jwt.expiration:86400000}")
     private Long jwtExpiration;
 
     /**
@@ -41,8 +41,6 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        log.info("Tentativa de registro para email: {}", request.getEmail());
-
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ValidationException("Email já está em uso");
         }
@@ -62,8 +60,6 @@ public class AuthService {
 
         user = userRepository.save(user);
 
-        log.info("Usuário registrado com sucesso: {}", user.getId());
-
         UserPrincipal userPrincipal = UserPrincipal.create(user);
         String accessToken = jwtService.generateToken(userPrincipal);
 
@@ -78,8 +74,6 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        log.info("Tentativa de login para: {}", request.getEmailOrUsername());
-
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -96,8 +90,6 @@ public class AuthService {
                 request.getEmailOrUsername(),
                 request.getEmailOrUsername()
         ).orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
-
-        log.info("Login bem-sucedido para usuário: {}", user.getId());
 
         UserPrincipal userPrincipal = UserPrincipal.create(user);
         String accessToken = jwtService.generateToken(userPrincipal);
@@ -121,10 +113,12 @@ public class AuthService {
                 .role(user.getRole() != null ? user.getRole().name() : null)
                 .build();
 
+        long expirationSeconds = (jwtExpiration != null ? jwtExpiration : 86400000L) / 1000;
+        
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .tokenType("Bearer")
-                .expiresIn(jwtExpiration / 1000) // Converte para segundos
+                .expiresIn(expirationSeconds) // Converte para segundos
                 .user(userInfo)
                 .build();
     }
