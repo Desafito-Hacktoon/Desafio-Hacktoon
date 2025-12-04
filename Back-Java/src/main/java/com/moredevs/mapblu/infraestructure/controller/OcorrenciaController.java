@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -37,6 +38,7 @@ public class OcorrenciaController {
 
     @Operation(summary = "Criar ocorrência", description = "Cria uma nova ocorrência municipal")
     @PostMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<OcorrenciaResponse> criar(@Valid @RequestBody OcorrenciaRequest request) {
         OcorrenciaResponse response = service.criar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -112,6 +114,7 @@ public class OcorrenciaController {
 
     @Operation(summary = "Atualizar ocorrência", description = "Atualiza uma ocorrência existente")
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<OcorrenciaResponse> atualizar(
             @Parameter(description = "ID da ocorrência") @PathVariable UUID id,
             @Valid @RequestBody OcorrenciaRequest request
@@ -122,6 +125,7 @@ public class OcorrenciaController {
 
     @Operation(summary = "Atualizar status", description = "Atualiza apenas o status de uma ocorrência")
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<OcorrenciaResponse> atualizarStatus(
             @Parameter(description = "ID da ocorrência") @PathVariable UUID id,
             @RequestParam StatusOcorrencia status
@@ -132,6 +136,7 @@ public class OcorrenciaController {
 
     @Operation(summary = "Remover ocorrência", description = "Remove uma ocorrência do sistema")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> remover(
             @Parameter(description = "ID da ocorrência") @PathVariable UUID id
     ) {
