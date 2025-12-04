@@ -1,56 +1,69 @@
 <div class="font-sans">
-  <div class="mb-4 p-3 bg-gray-50 rounded-lg border">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
-      <div class="space-y-1">
-        <label class="text-sm font-medium text-gray-600">Buscar</label>
-        <input z-input zSize="sm" type="text" placeholder="Buscar..." [value]="filtroBusca()"
-          (input)="filtroBusca.set($any($event.target).value); aplicarFiltros()" class="w-full" />
-      </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+    <z-card zTitle="Total de Ocorrências">
+      <div class="text-2xl font-semibold text-gray-900">{{ totalOcorrencias() }}</div>
+    </z-card>
 
-      <div class="space-y-1">
-        <label class="text-sm font-medium text-gray-600">Status</label>
-        <z-select [zValue]="filtroStatus()" zSize="default" zPlaceholder="Todos"
-          (zSelectionChange)="onStatusChange($event)" class="text-sm">
-          <z-select-item [zValue]="''">Todos</z-select-item>
-          @for (status of statusOptions; track status) {
-          <z-select-item [zValue]="status">{{ status }}</z-select-item>
-          }
-        </z-select>
-      </div>
+    <z-card zTitle="Ocorrências Críticas">
+      <div class="text-2xl font-semibold text-red-600">{{ ocorrenciasCriticas() }}</div>
+    </z-card>
 
-      <div class="space-y-1">
-        <label class="text-sm font-medium text-gray-600">Bairro</label>
-        <z-select [zValue]="filtroBairro()" zSize="default" zPlaceholder="Todos"
-          (zSelectionChange)="onBairroChange($event)" class="text-sm">
-          <z-select-item [zValue]="''">Todos</z-select-item>
-          @for (bairro of bairrosOptions(); track bairro) {
-          <z-select-item [zValue]="bairro">{{ bairro }}</z-select-item>
-          }
-        </z-select>
-      </div>
-
-      <div class="space-y-1">
-        <label class="text-sm font-medium text-gray-600">Tipo</label>
-        <z-select [zValue]="filtroTipo()" zSize="default" zPlaceholder="Todos" (zSelectionChange)="onTipoChange($event)"
-          class="text-sm">
-          <z-select-item [zValue]="''">Todos</z-select-item>
-          @for (tipo of tiposOptions(); track tipo) {
-          <z-select-item [zValue]="tipo">{{ tipo }}</z-select-item>
-          }
-        </z-select>
-      </div>
-
-      <div class="flex items-end h-full">
-        <button z-button zSize="sm" (click)="limparFiltros()"
-          class="!bg-black !text-white hover:!bg-gray-800 !border-0 w-full">
-          Limpar
-        </button>
-      </div>
-    </div>
+    <z-card zTitle="Ocorrências em Andamento">
+      <div class="text-2xl font-semibold text-blue-600">{{ ocorrenciasEmAndamento() }}</div>
+    </z-card>
   </div>
 
   <z-card zTitle="Ocorrências do mês">
     <div class="space-y-4">
+      <div class="p-3 bg-gray-50 rounded-lg border">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Buscar</label>
+            <input z-input zSize="sm" type="text" placeholder="Buscar..." [value]="filtroBusca()"
+              (input)="filtroBusca.set($any($event.target).value); aplicarFiltros()" class="w-full" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Status</label>
+            <z-select [zValue]="filtroStatus()" zSize="default" zPlaceholder="Todos"
+              (zSelectionChange)="onStatusChange($event)" class="text-sm">
+              <z-select-item [zValue]="''">Todos</z-select-item>
+              @for (status of statusOptions; track status) {
+              <z-select-item [zValue]="status">{{ status }}</z-select-item>
+              }
+            </z-select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Bairro</label>
+            <z-select [zValue]="filtroBairro()" zSize="default" zPlaceholder="Todos"
+              (zSelectionChange)="onBairroChange($event)" class="text-sm">
+              <z-select-item [zValue]="''">Todos</z-select-item>
+              @for (bairro of bairrosOptions(); track bairro) {
+              <z-select-item [zValue]="bairro">{{ bairro }}</z-select-item>
+              }
+            </z-select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Tipo</label>
+            <z-select [zValue]="filtroTipo()" zSize="default" zPlaceholder="Todos"
+              (zSelectionChange)="onTipoChange($event)" class="text-sm">
+              <z-select-item [zValue]="''">Todos</z-select-item>
+              @for (tipo of tiposOptions(); track tipo) {
+              <z-select-item [zValue]="tipo">{{ tipo }}</z-select-item>
+              }
+            </z-select>
+          </div>
+
+          <div class="flex items-end h-full">
+            <button z-button zSize="sm" (click)="limparFiltros()"
+              class="!bg-black !text-white hover:!bg-gray-800 !border-0 w-full">
+              Limpar
+            </button>
+          </div>
+        </div>
+      </div>
       <div class="overflow-x-auto">
         <table z-table class="w-full text-sm border-separate border-spacing-0">
           <thead z-table-header>

@@ -90,6 +90,21 @@ export class Dashboard implements OnInit {
     return Array.from(tipos).sort();
   });
 
+  // Métricas para os cards
+  totalOcorrencias = computed(() => {
+    return this.ocorrenciasOriginais().length;
+  });
+
+  ocorrenciasCriticas = computed(() => {
+    return this.ocorrenciasOriginais().filter(oc => oc.gravidade >= 8).length;
+  });
+
+  ocorrenciasEmAndamento = computed(() => {
+    return this.ocorrenciasOriginais().filter(oc => 
+      oc.status === 'EM_ANDAMENTO' || oc.status === 'Em Andamento'
+    ).length;
+  });
+
   constructor(
     private dashboardService: DashboardService,
     private router: Router
