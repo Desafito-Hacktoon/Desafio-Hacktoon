@@ -52,7 +52,7 @@ services:
   backend-java-core:
     build:
       context: ../java-core
-      dockerfile: ./Dockerfile.java
+      dockerfile: ../DevopsInfra/Dockerfile.java
     container_name: backend-java-core
     restart: unless-stopped
     environment:
