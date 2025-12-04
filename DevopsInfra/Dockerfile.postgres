@@ -1,0 +1,12 @@
+# Dockerfile para PostgreSQL com PostGIS - Suporte nativo ARM64
+# Usando Debian-based image que tem melhor suporte para PostGIS e ARM64 nativo
+FROM postgres:16
+
+# Instalar PostGIS e dependências usando apt-get (Debian)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-16-postgis-3 \
+    postgresql-16-postgis-3-scripts \
+    && rm -rf /var/lib/apt/lists/*
+
+# O script de inicialização do PostGIS será executado automaticamente
+# via /docker-entrypoint-initdb.d/001_enable_postgis.sql

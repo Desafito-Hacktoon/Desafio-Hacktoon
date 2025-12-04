@@ -1,25 +1,35 @@
 version: "3.9"
 
+# O arquivo .env está na raiz do projeto
+# Para executar o docker-compose:
+# Opção 1 (recomendado): Execute da raiz do projeto:
+#   cd /caminho/para/Desafio-Hackathon
+#   docker-compose -f DevopsInfra/docker-compose.yml --env-file .env up -d
+# Opção 2: Execute de dentro de DevopsInfra:
+#   cd DevopsInfra
+#   docker-compose --env-file ../.env up -d
+
 services:
   postgres:
-    image: postgis/postgis:15-3.3
+    # Usando Dockerfile customizado com PostgreSQL 16 + PostGIS
+    # A imagem oficial postgres:16 tem suporte multi-arch incluindo ARM64 nativo
+    # Isso evita emulação e reduz consumo de recursos no Apple Silicon
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
     container_name: postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./infra/db/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}",
-        ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -61,7 +71,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
-      XAI_API_KEY: ${XAI_API_KEY}
     ports:
       - "8080:8080"
     depends_on:
@@ -101,4 +110,3 @@ volumes:
   pg_data:
   pgadmin_data:
   redis_data:
-
