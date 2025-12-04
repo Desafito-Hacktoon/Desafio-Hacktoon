@@ -26,14 +26,12 @@
         "Manutenção preventiva na Alameda Rio Branco"
       ],
       "coordinates": [
-        {"lat": -26.9155, "lng": -49.0720},
-        {"lat": -26.9140, "lng": -49.0680},
-        {"lat": -26.9160, "lng": -49.0630},
-        {"lat": -26.9200, "lng": -49.0610},
-        {"lat": -26.9230, "lng": -49.0650},
-        {"lat": -26.9220, "lng": -49.0710},
-        {"lat": -26.9190, "lng": -49.0740},
-        {"lat": -26.9155, "lng": -49.0720}
+        {"lat": -26.9139, "lng": -49.0719},
+        {"lat": -26.9159, "lng": -49.0599},
+        {"lat": -26.9239, "lng": -49.0599},
+        {"lat": -26.9259, "lng": -49.0719},
+        {"lat": -26.9199, "lng": -49.0759},
+        {"lat": -26.9139, "lng": -49.0719}
       ]
     },
     {
@@ -54,14 +52,12 @@
         "Voluntários de prontidão"
       ],
       "coordinates": [
-        {"lat": -26.9050, "lng": -49.0650},
-        {"lat": -26.9030, "lng": -49.0600},
-        {"lat": -26.9060, "lng": -49.0540},
-        {"lat": -26.9110, "lng": -49.0520},
-        {"lat": -26.9140, "lng": -49.0570},
-        {"lat": -26.9120, "lng": -49.0640},
-        {"lat": -26.9080, "lng": -49.0670},
-        {"lat": -26.9050, "lng": -49.0650}
+        {"lat": -26.9099, "lng": -49.0703},
+        {"lat": -26.9119, "lng": -49.0583},
+        {"lat": -26.9199, "lng": -49.0583},
+        {"lat": -26.9219, "lng": -49.0703},
+        {"lat": -26.9159, "lng": -49.0743},
+        {"lat": -26.9099, "lng": -49.0703}
       ]
     },
     {
@@ -81,14 +77,12 @@
         "Recapeamento programado para Rua Minas Gerais"
       ],
       "coordinates": [
-        {"lat": -26.8980, "lng": -49.0850},
-        {"lat": -26.8950, "lng": -49.0790},
-        {"lat": -26.8980, "lng": -49.0720},
-        {"lat": -26.9040, "lng": -49.0700},
-        {"lat": -26.9080, "lng": -49.0760},
-        {"lat": -26.9060, "lng": -49.0840},
-        {"lat": -26.9020, "lng": -49.0870},
-        {"lat": -26.8980, "lng": -49.0850}
+        {"lat": -26.9125, "lng": -49.0985},
+        {"lat": -26.9145, "lng": -49.0865},
+        {"lat": -26.9225, "lng": -49.0865},
+        {"lat": -26.9245, "lng": -49.0985},
+        {"lat": -26.9185, "lng": -49.1025},
+        {"lat": -26.9125, "lng": -49.0985}
       ]
     },
     {
@@ -107,14 +101,12 @@
         "Limpeza de terreno baldio programada"
       ],
       "coordinates": [
-        {"lat": -26.9350, "lng": -49.0750},
-        {"lat": -26.9320, "lng": -49.0680},
-        {"lat": -26.9360, "lng": -49.0610},
-        {"lat": -26.9420, "lng": -49.0600},
-        {"lat": -26.9460, "lng": -49.0660},
-        {"lat": -26.9440, "lng": -49.0740},
-        {"lat": -26.9400, "lng": -49.0780},
-        {"lat": -26.9350, "lng": -49.0750}
+        {"lat": -26.9286, "lng": -49.0655},
+        {"lat": -26.9306, "lng": -49.0535},
+        {"lat": -26.9386, "lng": -49.0535},
+        {"lat": -26.9406, "lng": -49.0655},
+        {"lat": -26.9346, "lng": -49.0695},
+        {"lat": -26.9286, "lng": -49.0655}
       ]
     },
     {
@@ -136,24 +128,22 @@
         "Operação tapa-buraco em andamento"
       ],
       "coordinates": [
-        {"lat": -26.8750, "lng": -49.0920},
-        {"lat": -26.8710, "lng": -49.0850},
-        {"lat": -26.8750, "lng": -49.0780},
-        {"lat": -26.8820, "lng": -49.0750},
-        {"lat": -26.8880, "lng": -49.0810},
-        {"lat": -26.8860, "lng": -49.0900},
-        {"lat": -26.8810, "lng": -49.0940},
-        {"lat": -26.8750, "lng": -49.0920}
+        {"lat": -26.8736, "lng": -49.0842},
+        {"lat": -26.8756, "lng": -49.0722},
+        {"lat": -26.8836, "lng": -49.0722},
+        {"lat": -26.8856, "lng": -49.0842},
+        {"lat": -26.8796, "lng": -49.0882},
+        {"lat": -26.8736, "lng": -49.0842}
       ]
     },
     {
-      "id": "zone_itoupava_central",
-      "name": "Itoupava Central",
+      "id": "zone_itoupava_seca",
+      "name": "Itoupava Seca",
       "type": "buracos",
       "severity": "moderate",
       "color": "#FFFF00",
       "problemCount": 15,
-      "description": "Maior bairro de Blumenau em área. Situação moderada de pavimentação. Manutenção preventiva em andamento.",
+      "description": "Bairro Itoupava Seca. Situação moderada de pavimentação. Manutenção preventiva em andamento.",
       "responsibleEntityId": "semob",
       "responsavel": "SEMOB - Secretaria de Obras",
       "lastUpdate": "2025-12-02T10:00:00",
@@ -163,14 +153,12 @@
         "Recapeamento programado"
       ],
       "coordinates": [
-        {"lat": -26.8650, "lng": -49.0750},
-        {"lat": -26.8620, "lng": -49.0680},
-        {"lat": -26.8660, "lng": -49.0600},
-        {"lat": -26.8730, "lng": -49.0580},
-        {"lat": -26.8780, "lng": -49.0650},
-        {"lat": -26.8760, "lng": -49.0740},
-        {"lat": -26.8710, "lng": -49.0780},
-        {"lat": -26.8650, "lng": -49.0750}
+        {"lat": -26.8891, "lng": -49.0877},
+        {"lat": -26.8911, "lng": -49.0757},
+        {"lat": -26.8991, "lng": -49.0757},
+        {"lat": -26.9011, "lng": -49.0877},
+        {"lat": -26.8951, "lng": -49.0917},
+        {"lat": -26.8891, "lng": -49.0877}
       ]
     },
     {
@@ -188,14 +176,12 @@
         "Troca de lâmpada queimada na Praça do Bairro"
       ],
       "coordinates": [
-        {"lat": -26.9100, "lng": -49.0720},
-        {"lat": -26.9080, "lng": -49.0680},
-        {"lat": -26.9100, "lng": -49.0640},
-        {"lat": -26.9140, "lng": -49.0630},
-        {"lat": -26.9170, "lng": -49.0670},
-        {"lat": -26.9160, "lng": -49.0720},
-        {"lat": -26.9130, "lng": -49.0740},
-        {"lat": -26.9100, "lng": -49.0720}
+        {"lat": -26.9029, "lng": -49.0811},
+        {"lat": -26.9049, "lng": -49.0691},
+        {"lat": -26.9129, "lng": -49.0691},
+        {"lat": -26.9149, "lng": -49.0811},
+        {"lat": -26.9089, "lng": -49.0851},
+        {"lat": -26.9029, "lng": -49.0811}
       ]
     },
     {
@@ -215,14 +201,14 @@
         "Solicitação de ronda noturna"
       ],
       "coordinates": [
-        {"lat": -26.9080, "lng": -49.0800},
-        {"lat": -26.9050, "lng": -49.0750},
-        {"lat": -26.9080, "lng": -49.0690},
-        {"lat": -26.9130, "lng": -49.0680},
-        {"lat": -26.9160, "lng": -49.0740},
-        {"lat": -26.9140, "lng": -49.0810},
-        {"lat": -26.9110, "lng": -49.0830},
-        {"lat": -26.9080, "lng": -49.0800}
+        {"lat": -26.8950, "lng": -49.0500},
+        {"lat": -26.8920, "lng": -49.0450},
+        {"lat": -26.8960, "lng": -49.0390},
+        {"lat": -26.9020, "lng": -49.0380},
+        {"lat": -26.9060, "lng": -49.0440},
+        {"lat": -26.9040, "lng": -49.0510},
+        {"lat": -26.8990, "lng": -49.0530},
+        {"lat": -26.8950, "lng": -49.0500}
       ]
     },
     {
@@ -242,14 +228,12 @@
         "Mutirão de exames programado"
       ],
       "coordinates": [
-        {"lat": -26.9180, "lng": -49.0580},
-        {"lat": -26.9160, "lng": -49.0530},
-        {"lat": -26.9190, "lng": -49.0480},
-        {"lat": -26.9240, "lng": -49.0470},
-        {"lat": -26.9280, "lng": -49.0520},
-        {"lat": -26.9260, "lng": -49.0580},
-        {"lat": -26.9220, "lng": -49.0610},
-        {"lat": -26.9180, "lng": -49.0580}
+        {"lat": -26.9047, "lng": -49.1134},
+        {"lat": -26.9067, "lng": -49.1014},
+        {"lat": -26.9147, "lng": -49.1014},
+        {"lat": -26.9167, "lng": -49.1134},
+        {"lat": -26.9107, "lng": -49.1174},
+        {"lat": -26.9047, "lng": -49.1134}
       ]
     },
     {
@@ -259,7 +243,7 @@
       "severity": "warning",
       "color": "#FFA500",
       "problemCount": 22,
-      "description": "Bairro Progresso, região oeste. Problemas de iluminação pública em várias ruas. CELESC com equipe programada para manutenção.",
+      "description": "Bairro Progresso, região sul. Problemas de iluminação pública em várias ruas. CELESC com equipe programada para manutenção.",
       "responsibleEntityId": "celesc",
       "responsavel": "CELESC - Iluminação Pública",
       "lastUpdate": "2025-12-02T18:00:00",
@@ -270,14 +254,12 @@
         "Poste inclinado na Rua das Flores"
       ],
       "coordinates": [
-        {"lat": -26.9150, "lng": -49.0900},
-        {"lat": -26.9120, "lng": -49.0840},
-        {"lat": -26.9150, "lng": -49.0780},
-        {"lat": -26.9210, "lng": -49.0770},
-        {"lat": -26.9250, "lng": -49.0830},
-        {"lat": -26.9230, "lng": -49.0900},
-        {"lat": -26.9190, "lng": -49.0930},
-        {"lat": -26.9150, "lng": -49.0900}
+        {"lat": -26.9663, "lng": -49.0812},
+        {"lat": -26.9683, "lng": -49.0692},
+        {"lat": -26.9763, "lng": -49.0692},
+        {"lat": -26.9783, "lng": -49.0812},
+        {"lat": -26.9723, "lng": -49.0852},
+        {"lat": -26.9663, "lng": -49.0812}
       ]
     },
     {
@@ -297,14 +279,12 @@
         "Instalação de nova rede em andamento"
       ],
       "coordinates": [
-        {"lat": -26.8850, "lng": -49.0650},
-        {"lat": -26.8820, "lng": -49.0590},
-        {"lat": -26.8860, "lng": -49.0530},
-        {"lat": -26.8920, "lng": -49.0520},
-        {"lat": -26.8960, "lng": -49.0580},
-        {"lat": -26.8940, "lng": -49.0650},
-        {"lat": -26.8900, "lng": -49.0680},
-        {"lat": -26.8850, "lng": -49.0650}
+        {"lat": -26.8731, "lng": -49.0713},
+        {"lat": -26.8751, "lng": -49.0593},
+        {"lat": -26.8831, "lng": -49.0593},
+        {"lat": -26.8851, "lng": -49.0713},
+        {"lat": -26.8791, "lng": -49.0753},
+        {"lat": -26.8731, "lng": -49.0713}
       ]
     },
     {
@@ -322,14 +302,12 @@
         "Solicitação de poda preventiva"
       ],
       "coordinates": [
-        {"lat": -26.9000, "lng": -49.0600},
-        {"lat": -26.8970, "lng": -49.0550},
-        {"lat": -26.9000, "lng": -49.0500},
-        {"lat": -26.9050, "lng": -49.0490},
-        {"lat": -26.9090, "lng": -49.0540},
-        {"lat": -26.9070, "lng": -49.0610},
-        {"lat": -26.9030, "lng": -49.0630},
-        {"lat": -26.9000, "lng": -49.0600}
+        {"lat": -26.8974, "lng": -49.0942},
+        {"lat": -26.8994, "lng": -49.0822},
+        {"lat": -26.9074, "lng": -49.0822},
+        {"lat": -26.9094, "lng": -49.0942},
+        {"lat": -26.9034, "lng": -49.0982},
+        {"lat": -26.8974, "lng": -49.0942}
       ]
     },
     {
@@ -349,40 +327,36 @@
         "Orientação sobre fossas sépticas"
       ],
       "coordinates": [
-        {"lat": -26.8550, "lng": -49.0850},
-        {"lat": -26.8520, "lng": -49.0780},
-        {"lat": -26.8560, "lng": -49.0710},
-        {"lat": -26.8630, "lng": -49.0700},
-        {"lat": -26.8680, "lng": -49.0760},
-        {"lat": -26.8660, "lng": -49.0850},
-        {"lat": -26.8610, "lng": -49.0880},
-        {"lat": -26.8550, "lng": -49.0850}
+        {"lat": -26.8429, "lng": -49.1199},
+        {"lat": -26.8449, "lng": -49.1079},
+        {"lat": -26.8529, "lng": -49.1079},
+        {"lat": -26.8549, "lng": -49.1199},
+        {"lat": -26.8489, "lng": -49.1239},
+        {"lat": -26.8429, "lng": -49.1199}
       ]
     },
     {
-      "id": "zone_salto_norte",
-      "name": "Salto do Norte",
+      "id": "zone_salto_weissbach",
+      "name": "Salto Weissbach",
       "type": "obras",
       "severity": "moderate",
       "color": "#FFFF00",
       "problemCount": 8,
-      "description": "Bairro Salto do Norte. Obras da ETA 5 do SAMAE em andamento. Região com melhorias de infraestrutura sendo realizadas.",
+      "description": "Bairro Salto Weissbach. Obras de infraestrutura em andamento. Região com melhorias sendo realizadas.",
       "responsibleEntityId": "samae",
       "responsavel": "SAMAE - Obras",
       "lastUpdate": "2025-12-02T11:00:00",
       "recentProblems": [
-        "Obras da ETA 5 causando alterações no trânsito",
+        "Obras causando alterações no trânsito",
         "Instalação de nova adutora"
       ],
       "coordinates": [
-        {"lat": -26.8450, "lng": -49.0950},
-        {"lat": -26.8420, "lng": -49.0880},
-        {"lat": -26.8460, "lng": -49.0810},
-        {"lat": -26.8530, "lng": -49.0800},
-        {"lat": -26.8580, "lng": -49.0860},
-        {"lat": -26.8560, "lng": -49.0950},
-        {"lat": -26.8510, "lng": -49.0980},
-        {"lat": -26.8450, "lng": -49.0950}
+        {"lat": -26.8907, "lng": -49.1359},
+        {"lat": -26.8927, "lng": -49.1239},
+        {"lat": -26.9007, "lng": -49.1239},
+        {"lat": -26.9027, "lng": -49.1359},
+        {"lat": -26.8967, "lng": -49.1399},
+        {"lat": -26.8907, "lng": -49.1359}
       ]
     },
     {
@@ -400,14 +374,12 @@
         "Manutenção preventiva concluída"
       ],
       "coordinates": [
-        {"lat": -26.8350, "lng": -49.0800},
-        {"lat": -26.8320, "lng": -49.0730},
-        {"lat": -26.8360, "lng": -49.0660},
-        {"lat": -26.8430, "lng": -49.0650},
-        {"lat": -26.8480, "lng": -49.0710},
-        {"lat": -26.8460, "lng": -49.0800},
-        {"lat": -26.8410, "lng": -49.0830},
-        {"lat": -26.8350, "lng": -49.0800}
+        {"lat": -26.8771, "lng": -49.1418},
+        {"lat": -26.8791, "lng": -49.1298},
+        {"lat": -26.8871, "lng": -49.1298},
+        {"lat": -26.8891, "lng": -49.1418},
+        {"lat": -26.8831, "lng": -49.1458},
+        {"lat": -26.8771, "lng": -49.1418}
       ]
     },
     {
@@ -427,39 +399,12 @@
         "Sinalização vertical sendo renovada"
       ],
       "coordinates": [
-        {"lat": -26.8950, "lng": -49.0500},
-        {"lat": -26.8920, "lng": -49.0450},
-        {"lat": -26.8960, "lng": -49.0390},
-        {"lat": -26.9020, "lng": -49.0380},
-        {"lat": -26.9060, "lng": -49.0440},
-        {"lat": -26.9040, "lng": -49.0510},
-        {"lat": -26.8990, "lng": -49.0530},
-        {"lat": -26.8950, "lng": -49.0500}
-      ]
-    },
-    {
-      "id": "zone_tribess",
-      "name": "Tribess",
-      "type": "seguranca",
-      "severity": "low",
-      "color": "#90EE90",
-      "problemCount": 4,
-      "description": "Bairro Tribess, região industrial. Fiscalização do PROCON realizada recentemente. Segurança estável com rondas regulares.",
-      "responsibleEntityId": "guarda",
-      "responsavel": "Guarda Municipal",
-      "lastUpdate": "2025-11-28T16:00:00",
-      "recentProblems": [
-        "Ronda preventiva realizada"
-      ],
-      "coordinates": [
-        {"lat": -26.9250, "lng": -49.0550},
-        {"lat": -26.9220, "lng": -49.0500},
-        {"lat": -26.9260, "lng": -49.0450},
-        {"lat": -26.9320, "lng": -49.0440},
-        {"lat": -26.9360, "lng": -49.0500},
-        {"lat": -26.9340, "lng": -49.0560},
-        {"lat": -26.9290, "lng": -49.0580},
-        {"lat": -26.9250, "lng": -49.0550}
+        {"lat": -26.8891, "lng": -49.1050},
+        {"lat": -26.8911, "lng": -49.0930},
+        {"lat": -26.8991, "lng": -49.0930},
+        {"lat": -26.9011, "lng": -49.1050},
+        {"lat": -26.8951, "lng": -49.1090},
+        {"lat": -26.8891, "lng": -49.1050}
       ]
     },
     {
@@ -479,72 +424,43 @@
         "Caminhão pipa disponibilizado"
       ],
       "coordinates": [
-        {"lat": -26.9400, "lng": -49.0600},
-        {"lat": -26.9370, "lng": -49.0550},
-        {"lat": -26.9400, "lng": -49.0500},
-        {"lat": -26.9460, "lng": -49.0490},
-        {"lat": -26.9500, "lng": -49.0540},
-        {"lat": -26.9480, "lng": -49.0610},
-        {"lat": -26.9440, "lng": -49.0640},
-        {"lat": -26.9400, "lng": -49.0600}
+        {"lat": -26.9203, "lng": -49.0678},
+        {"lat": -26.9223, "lng": -49.0558},
+        {"lat": -26.9303, "lng": -49.0558},
+        {"lat": -26.9323, "lng": -49.0678},
+        {"lat": -26.9263, "lng": -49.0718},
+        {"lat": -26.9203, "lng": -49.0678}
       ]
     },
     {
-      "id": "zone_valparaiso",
-      "name": "Valparaíso",
-      "type": "limpeza",
+      "id": "zone_boa_vista",
+      "name": "Boa Vista",
+      "type": "seguranca",
       "severity": "low",
       "color": "#90EE90",
-      "problemCount": 2,
-      "description": "Bairro Valparaíso, área residencial organizada. Coleta de lixo funcionando normalmente. Bairro modelo em coleta seletiva.",
-      "responsibleEntityId": "samae",
-      "responsavel": "SAMAE - Resíduos",
-      "lastUpdate": "2025-11-27T08:00:00",
+      "problemCount": 4,
+      "description": "Bairro Boa Vista, área residencial. Segurança estável com rondas regulares da Guarda Municipal.",
+      "responsibleEntityId": "guarda",
+      "responsavel": "Guarda Municipal",
+      "lastUpdate": "2025-11-28T16:00:00",
       "recentProblems": [
-        "Falta de coleta seletiva ampliada para mais ruas"
+        "Ronda preventiva realizada"
       ],
       "coordinates": [
-        {"lat": -26.9280, "lng": -49.0700},
-        {"lat": -26.9250, "lng": -49.0650},
-        {"lat": -26.9280, "lng": -49.0600},
-        {"lat": -26.9340, "lng": -49.0590},
-        {"lat": -26.9380, "lng": -49.0640},
-        {"lat": -26.9360, "lng": -49.0710},
-        {"lat": -26.9320, "lng": -49.0730},
-        {"lat": -26.9280, "lng": -49.0700}
-      ]
-    },
-    {
-      "id": "zone_gloria",
-      "name": "Glória",
-      "type": "buracos",
-      "severity": "low",
-      "color": "#90EE90",
-      "problemCount": 6,
-      "description": "Bairro Glória, região oeste. Pavimentação em boas condições após recapeamento recente. Manutenção preventiva ativa.",
-      "responsibleEntityId": "semob",
-      "responsavel": "SEMOB - Obras",
-      "lastUpdate": "2025-11-30T14:00:00",
-      "recentProblems": [
-        "Pequena erosão em via secundária corrigida"
-      ],
-      "coordinates": [
-        {"lat": -26.9220, "lng": -49.0850},
-        {"lat": -26.9190, "lng": -49.0800},
-        {"lat": -26.9220, "lng": -49.0750},
-        {"lat": -26.9280, "lng": -49.0740},
-        {"lat": -26.9320, "lng": -49.0790},
-        {"lat": -26.9300, "lng": -49.0860},
-        {"lat": -26.9260, "lng": -49.0880},
-        {"lat": -26.9220, "lng": -49.0850}
+        {"lat": -26.8954, "lng": -49.0728},
+        {"lat": -26.8974, "lng": -49.0608},
+        {"lat": -26.9054, "lng": -49.0608},
+        {"lat": -26.9074, "lng": -49.0728},
+        {"lat": -26.9014, "lng": -49.0768},
+        {"lat": -26.8954, "lng": -49.0728}
       ]
     }
   ],
   "summary": {
-    "totalProblems": 244,
+    "totalProblems": 226,
     "criticalZones": 2,
-    "warningZones": 7,
-    "moderateZones": 6,
+    "warningZones": 6,
+    "moderateZones": 5,
     "stableZones": 6,
     "lastUpdated": "2025-12-03T10:00:00",
     "city": "Blumenau",
