@@ -1,14 +1,17 @@
-# services/java-core/Dockerfile
-FROM maven:3.9.9-eclipse-temurin-21 AS build
-WORKDIR /app
-COPY pom.xml .
-RUN mvn -q -e -DskipTests dependency:go-offline
-COPY src ./src
-RUN mvn -q -DskipTests package
+# services/geo-engine/Dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY *.sln ./
+COPY src/ ./src/
+RUN dotnet restore ./src/GeoEngine/GeoEngine.csproj
+RUN dotnet publish ./src/GeoEngine/GeoEngine.csproj -c Release -o /app/publish
 
-FROM eclipse-temurin:21-jre
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-ENV JAVA_OPTS="-Xms256m -Xmx512m"
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/publish .
+# Kestrel em 8080 dentro do container
+ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 EXPOSE 8080
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["dotnet", "GeoEngine.dll"]
+
+
