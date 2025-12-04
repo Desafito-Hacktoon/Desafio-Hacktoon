@@ -20,12 +20,19 @@ class _StatisticsPageState extends State<StatisticsPage> {
   }
 
   Future<void> _loadData() async {
-    final service = HeatmapService();
-    final zones = await service.loadHeatmapData();
-    setState(() {
-      _zones = zones;
-      _isLoading = false;
-    });
+    try {
+      final service = HeatmapService();
+      final zones = await service.fetchFromApi();
+      setState(() {
+        _zones = zones;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _zones = [];
+        _isLoading = false;
+      });
+    }
   }
 
   int get _totalProblems => _zones.fold(0, (sum, z) => sum + z.problemCount);
@@ -96,7 +103,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1E3A5F).withOpacity(0.3),
+            color: const Color(0xFF1E3A5F).withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -230,7 +237,10 @@ class _StatisticsPageState extends State<StatisticsPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+          ),
         ],
       ),
       child: Column(
@@ -269,7 +279,10 @@ class _StatisticsPageState extends State<StatisticsPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+          ),
         ],
       ),
       child: Column(
@@ -354,9 +367,12 @@ class _StatisticsPageState extends State<StatisticsPage> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color.withOpacity(0.3)),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+              ),
             ],
           ),
           child: Row(
@@ -364,7 +380,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/responsible_entity.dart';
 
@@ -106,7 +105,7 @@ class _EntitiesListPageState extends State<EntitiesListPage> {
                           onSelected: (selected) => setState(
                             () => _selectedCategory = category['value'],
                           ),
-                          backgroundColor: Colors.white.withOpacity(0.1),
+                          backgroundColor: Colors.white.withValues(alpha: 0.1),
                           selectedColor: Colors.white,
                           labelStyle: TextStyle(
                             color: isSelected
@@ -171,7 +170,7 @@ class _EntitiesListPageState extends State<EntitiesListPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -186,7 +185,7 @@ class _EntitiesListPageState extends State<EntitiesListPage> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E3A5F).withOpacity(0.1),
+                    color: const Color(0xFF1E3A5F).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(

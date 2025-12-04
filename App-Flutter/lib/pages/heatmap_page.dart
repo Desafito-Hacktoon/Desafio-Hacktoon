@@ -189,8 +189,8 @@ class _HeatmapPageState extends State<HeatmapPage>
             end: Alignment.bottomCenter,
             colors: [
               Colors.white,
-              Colors.white.withOpacity(0.9),
-              Colors.white.withOpacity(0),
+              Colors.white.withValues(alpha: 0.9),
+              Colors.white.withValues(alpha: 0),
             ],
           ),
         ),
@@ -209,7 +209,7 @@ class _HeatmapPageState extends State<HeatmapPage>
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -263,7 +263,7 @@ class _HeatmapPageState extends State<HeatmapPage>
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
@@ -360,7 +360,7 @@ class _HeatmapPageState extends State<HeatmapPage>
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -425,7 +425,7 @@ class _HeatmapPageState extends State<HeatmapPage>
               points: zone.coordinates,
               color: PolygonMapper.hexToColor(
                 zone.color,
-              ).withOpacity(isSelected ? 0.7 : 0.5),
+              ).withValues(alpha: isSelected ? 0.7 : 0.5),
               borderColor: isSelected
                   ? Colors.white
                   : PolygonMapper.hexToColor(zone.color),
@@ -468,7 +468,10 @@ class _HeatmapPageState extends State<HeatmapPage>
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+            ),
           ],
         ),
         child: Column(
@@ -527,7 +530,10 @@ class _HeatmapPageState extends State<HeatmapPage>
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+            ),
           ],
         ),
         child: Column(
@@ -732,7 +738,7 @@ class ZoneDetailPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                         ),
                       ],
@@ -784,7 +790,7 @@ class ZoneDetailPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -838,7 +844,10 @@ class ZoneDetailPage extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+          ),
         ],
       ),
       child: Row(
@@ -846,7 +855,7 @@ class ZoneDetailPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E3A5F).withOpacity(0.1),
+              color: const Color(0xFF1E3A5F).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: const Color(0xFF1E3A5F)),

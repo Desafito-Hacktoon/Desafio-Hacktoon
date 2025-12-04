@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import '../models/zone_model.dart';
@@ -25,56 +24,23 @@ class HeatmapService {
     return ApiConfig.baseUrl;
   }
 
-  /// Carrega dados do mock local (fallback)
-  Future<List<ZoneModel>> loadHeatmapData() async {
-    try {
-      final String jsonString = await rootBundle.loadString(_assetPath);
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
-      final List<dynamic> zonesJson = jsonData['zones'] as List<dynamic>;
-      return zonesJson
-          .map((zone) => ZoneModel.fromJson(zone as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      throw Exception('Erro ao carregar dados do mapa de calor: $e');
-    }
-  }
-
-  /// Carrega dados filtrados do mock local
-  Future<List<ZoneModel>> loadHeatmapDataByFilter(String filterType) async {
-    final allZones = await loadHeatmapData();
-    if (filterType == 'todos') return allZones;
-    return allZones.where((zone) => zone.type == filterType).toList();
-  }
-
   /// Busca ocorrências da API e transforma em zonas
   Future<List<ZoneModel>> fetchFromApi({String? filter}) async {
-    try {
-      final ocorrencias = await _fetchOcorrencias(tipoProblema: filter);
+    final ocorrencias = await _fetchOcorrencias(tipoProblema: filter);
 
-      if (ocorrencias.isEmpty) {
-        // Se não há dados da API, usa o mock como fallback
-        debugPrint('API retornou vazio, usando mock como fallback');
-        return filter != null && filter != 'todos'
-            ? loadHeatmapDataByFilter(filter)
-            : loadHeatmapData();
-      }
-
-      // Agrupa ocorrências por bairro e converte para ZoneModel
-      final zones = _groupOcorrenciasByBairro(ocorrencias);
-
-      if (filter != null && filter != 'todos') {
-        return zones.where((zone) => zone.type == filter).toList();
-      }
-
-      return zones;
-    } catch (e) {
-      debugPrint('Erro ao buscar da API: $e');
-      // Fallback para mock em caso de erro
-      if (filter != null && filter != 'todos') {
-        return loadHeatmapDataByFilter(filter);
-      }
-      return loadHeatmapData();
+    if (ocorrencias.isEmpty) {
+      debugPrint('API retornou vazio');
+      return [];
     }
+
+    // Agrupa ocorrências por bairro e converte para ZoneModel
+    final zones = _groupOcorrenciasByBairro(ocorrencias);
+
+    if (filter != null && filter != 'todos') {
+      return zones.where((zone) => zone.type == filter).toList();
+    }
+
+    return zones;
   }
 
   /// Busca todas as ocorrências da API
@@ -114,11 +80,11 @@ class HeatmapService {
         return pagedResponse.content;
       } else {
         debugPrint('Erro na API: ${response.statusCode}');
-        return [];
+        throw Exception('Erro na API: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('Exceção ao buscar ocorrências: $e');
-      return [];
+      rethrow;
     }
   }
 

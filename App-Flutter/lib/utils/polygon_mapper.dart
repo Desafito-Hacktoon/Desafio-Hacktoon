@@ -22,7 +22,7 @@ class PolygonMapper {
     bool isSelected = false,
   }) {
     final Color baseColor = hexToColor(zone.color);
-    final Color fillColor = baseColor.withOpacity(isSelected ? 0.7 : 0.4);
+    final Color fillColor = baseColor.withValues(alpha: isSelected ? 0.7 : 0.4);
     final Color borderColor = isSelected ? Colors.white : baseColor;
 
     return Polygon(
