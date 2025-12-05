@@ -5,12 +5,16 @@
   overflow: hidden;
 }
 
-:host ::ng-deep a.active {
+:host ::ng-deep z-sidebar a.active,
+:host ::ng-deep z-sidebar-group a.active,
+:host ::ng-deep z-sidebar.custom-sidebar a.active {
   background-color: hsl(222.2 47.4% 11.2%) !important;
   color: hsl(0 0% 100%) !important;
 }
 
-:host ::ng-deep a.active:hover {
+:host ::ng-deep z-sidebar a.active:hover,
+:host ::ng-deep z-sidebar-group a.active:hover,
+:host ::ng-deep z-sidebar.custom-sidebar a.active:hover {
   background-color: hsl(222.2 47.4% 11.2%) !important;
   color: hsl(0 0% 100%) !important;
 }

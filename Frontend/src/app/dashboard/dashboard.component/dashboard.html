@@ -1,5 +1,10 @@
 <div class="font-sans">
   <div class="mb-6 flex items-center justify-between">
+    @if (isLoadingStats()) {
+    <div class="text-sm text-gray-500">Carregando...</div>
+    } @else {
+    <div></div>
+    }
     <div class="flex items-center gap-3">
       <label class="text-sm font-medium text-gray-700">Período:</label>
       <z-select [zValue]="periodoSelecionado()" zSize="default" zPlaceholder="Selecione o período"
@@ -9,9 +14,6 @@
         }
       </z-select>
     </div>
-    @if (isLoadingStats()) {
-    <div class="text-sm text-gray-500">Carregando...</div>
-    }
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
