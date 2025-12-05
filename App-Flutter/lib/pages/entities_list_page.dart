@@ -105,12 +105,12 @@ class _EntitiesListPageState extends State<EntitiesListPage> {
                           onSelected: (selected) => setState(
                             () => _selectedCategory = category['value'],
                           ),
-                          backgroundColor: Colors.white.withValues(alpha: 0.1),
+                          backgroundColor: Colors.white.withOpacity(0.1),
                           selectedColor: Colors.white,
                           labelStyle: TextStyle(
                             color: isSelected
                                 ? const Color(0xFF135CE4)
-                                : Colors.white,
+                                : const Color.fromARGB(255, 0, 0, 0),
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
@@ -170,7 +170,7 @@ class _EntitiesListPageState extends State<EntitiesListPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -185,7 +185,7 @@ class _EntitiesListPageState extends State<EntitiesListPage> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF135CE4).withValues(alpha: 0.1),
+                    color: const Color(0xFF135CE4).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
