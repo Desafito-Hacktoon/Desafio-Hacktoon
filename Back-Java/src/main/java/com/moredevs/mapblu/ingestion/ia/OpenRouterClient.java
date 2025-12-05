@@ -34,6 +34,8 @@ public class OpenRouterClient {
     private final String model;
     private final int maxRetries;
     private final long retryDelayMs;
+    private final int maxTokensClassificacao;
+    private final double temperatureClassificacao;
 
     private static final Pattern NUMBER_PATTERN = Pattern.compile("\\b([1-9]|10)\\b");
     private static final int MAX_RETRIES_DEFAULT = 2;
@@ -44,9 +46,11 @@ public class OpenRouterClient {
             ObjectMapper objectMapper,
             @Value("${openrouter.api.key:}") String apiKey,
             @Value("${openrouter.api.base-url:https://openrouter.ai/api/v1}") String baseUrl,
-            @Value("${openrouter.api.model:meta-llama/llama-3.2-3b-instruct:free}") String model,
+            @Value("${openrouter.api.model:}") String model,
             @Value("${openrouter.api.max-retries:" + MAX_RETRIES_DEFAULT + "}") int maxRetries,
-            @Value("${openrouter.api.retry-delay-ms:" + RETRY_DELAY_MS_DEFAULT + "}") long retryDelayMs) {
+            @Value("${openrouter.api.retry-delay-ms:" + RETRY_DELAY_MS_DEFAULT + "}") long retryDelayMs,
+            @Value("${openrouter.api.max-tokens-classificacao:50}") int maxTokensClassificacao,
+            @Value("${openrouter.api.temperature-classificacao:0.2}") double temperatureClassificacao) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.apiKey = apiKey;
@@ -54,6 +58,8 @@ public class OpenRouterClient {
         this.model = model;
         this.maxRetries = maxRetries;
         this.retryDelayMs = retryDelayMs;
+        this.maxTokensClassificacao = maxTokensClassificacao;
+        this.temperatureClassificacao = temperatureClassificacao;
     }
 
     public Integer classificarGravidade(String descricao, TipoProblema tipoProblema, String bairro) {
@@ -65,6 +71,38 @@ public class OpenRouterClient {
         String prompt = construirPrompt(descricao, tipoProblema, bairro);
         String responseContent = chamarAPIComRetry(prompt);
         return extrairGravidade(responseContent);
+    }
+
+    /**
+     * Método genérico para chamadas customizadas à API OpenRouter.
+     * Suporta prompts de sistema e usuário separados.
+     * 
+     * @param promptSistema prompt do sistema (contexto)
+     * @param promptUsuario prompt do usuário (instrução)
+     * @param maxTokens número máximo de tokens na resposta (padrão: 4000)
+     * @param temperature temperatura para geração (padrão: 0.7)
+     * @return resposta da IA como string
+     */
+    public String chamarAPIGenerico(String promptSistema, String promptUsuario, int maxTokens, double temperature) {
+        if (!isConfigurado()) {
+            throw new IAClassificationException("OpenRouter API key não configurada");
+        }
+
+        // Combina prompts de forma estruturada
+        String promptCompleto = String.format(
+            "=== CONTEXTO DO SISTEMA ===\n%s\n\n=== INSTRUÇÃO DO USUÁRIO ===\n%s",
+            promptSistema != null ? promptSistema : "",
+            promptUsuario
+        );
+
+        return chamarAPIComRetryGenerico(promptCompleto, maxTokens, temperature);
+    }
+
+    /**
+     * Versão simplificada com parâmetros padrão.
+     */
+    public String chamarAPIGenerico(String promptSistema, String promptUsuario) {
+        return chamarAPIGenerico(promptSistema, promptUsuario, 4000, 0.7);
     }
 
     public boolean isConfigurado() {
@@ -95,6 +133,110 @@ public class OpenRouterClient {
             bairro,
             descricaoFormatada
         );
+    }
+
+    private String chamarAPIComRetryGenerico(String prompt, int maxTokens, double temperature) {
+        Exception lastException = null;
+        
+        for (int attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                if (attempt > 0) {
+                    long delay = retryDelayMs * (1L << (attempt - 1));
+                    Thread.sleep(delay);
+                }
+                
+                return chamarAPIGenerico(prompt, maxTokens, temperature);
+            } catch (HttpClientErrorException e) {
+                if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS && attempt < maxRetries) {
+                    lastException = e;
+                    continue;
+                }
+                
+                String errorBody = e.getResponseBodyAsString();
+                String errorMessage = "Erro do cliente na API OpenRouter: " + e.getStatusCode();
+                if (errorBody != null && !errorBody.isBlank()) {
+                    errorMessage += " - " + errorBody;
+                }
+                throw new IAClassificationException(errorMessage, e);
+            } catch (HttpServerErrorException e) {
+                lastException = e;
+                if (attempt == maxRetries) {
+                    throw new IAClassificationException(
+                        "Erro do servidor na API OpenRouter após " + (maxRetries + 1) + " tentativas", e);
+                }
+            } catch (ResourceAccessException e) {
+                lastException = e;
+                if (attempt == maxRetries) {
+                    throw new IAClassificationException(
+                        "Falha de conexão com OpenRouter após " + (maxRetries + 1) + " tentativas", e);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IAClassificationException("Thread interrompida durante retry", e);
+            } catch (RestClientException e) {
+                throw new IAClassificationException("Erro ao comunicar com OpenRouter", e);
+            }
+        }
+        
+        throw new IAClassificationException(
+            "Falha ao chamar API após " + (maxRetries + 1) + " tentativas", lastException);
+    }
+
+    private String chamarAPIGenerico(String prompt, int maxTokens, double temperature) {
+        HttpHeaders headers = criarHeaders();
+        OpenRouterRequest request = criarRequestGenerico(prompt, maxTokens, temperature);
+        HttpEntity<OpenRouterRequest> entity = new HttpEntity<>(request, headers);
+
+        String url = baseUrl + "/chat/completions";
+
+        try {
+            ResponseEntity<String> rawResponse = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+            
+            String responseBody = rawResponse.getBody();
+            
+            if (responseBody == null || responseBody.isBlank()) {
+                throw new IAClassificationException("Resposta vazia da API OpenRouter");
+            }
+            
+            String content = extrairContentDaResposta(responseBody);
+            
+            if (content == null || content.isBlank()) {
+                throw new IAClassificationException("Conteúdo vazio na resposta da API OpenRouter");
+            }
+            
+            return content;
+            
+        } catch (HttpClientErrorException e) {
+            String errorBody = e.getResponseBodyAsString();
+            String errorMessage = "Erro " + e.getStatusCode() + " da API OpenRouter";
+            if (errorBody != null && !errorBody.isBlank()) {
+                errorMessage += ": " + errorBody;
+            }
+            throw new IAClassificationException(errorMessage, e);
+        } catch (IAClassificationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IAClassificationException("Erro ao processar resposta da API OpenRouter", e);
+        }
+    }
+
+    private OpenRouterRequest criarRequestGenerico(String prompt, int maxTokens, double temperature) {
+        OpenRouterRequest.Message message = OpenRouterRequest.Message.builder()
+                .role("user")
+                .content(prompt)
+                .build();
+
+        return OpenRouterRequest.builder()
+                .model(model)
+                .messages(Collections.singletonList(message))
+                .temperature(temperature)
+                .maxTokens(maxTokens)
+                .build();
     }
 
     private String chamarAPIComRetry(String prompt) {
@@ -264,8 +406,8 @@ public class OpenRouterClient {
         return OpenRouterRequest.builder()
                 .model(model)
                 .messages(Collections.singletonList(message))
-                .temperature(0.2)
-                .maxTokens(50)
+                .temperature(temperatureClassificacao)
+                .maxTokens(maxTokensClassificacao)
                 .build();
     }
 
