@@ -93,10 +93,10 @@ services:
       postgres:
         condition: service_healthy
 
-  frontend-flutter:
+  flutter-web:
     build:
       context: ../App-Flutter
-      dockerfile: Dockerfile.flutter
+      dockerfile: ../DevopsInfraDockerfile.flutter
     ports:
       - "4200:80"
     
