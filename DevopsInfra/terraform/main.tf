@@ -208,31 +208,25 @@ resource "aws_instance" "BluLabs_server" {
     /home/ubuntu/flutter/bin/flutter pub get
     /home/ubuntu/flutter/bin/flutter build web
 
-    # Instalar NVM e Node.js
+    # Instalar NVM e Node.js como ubuntu
     su - ubuntu -c '
-    # Instala NVM e Node.js
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-    export NVM_DIR="$HOME/.nvm"
+    export NVM_DIR="/home/ubuntu/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] || curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
     source "$NVM_DIR/nvm.sh"
     nvm install 22
     nvm use 22
 
-    # Build do Angular
     cd /home/ubuntu/Desafio-Hackathon/Frontend
     npm install --legacy-peer-deps
     npm run build -- --configuration production
-    '
+'
+
+    cd /home/ubuntu/Desafio-Hackathon/DevopsInfra
+    docker-compose up -d --build
 
 
-
-
-
-    # Build da imagem Docker
-    cd /home/ubuntu/Desafio-Hackathon
-    docker build -t flutter-web -f DevopsInfra/Dockerfile.flutter .
-
-    # Sobe o container
-    docker run -d -p 4200:80 --name frontend-flutter flutter-web
+    
+    
 
     
   EOF
