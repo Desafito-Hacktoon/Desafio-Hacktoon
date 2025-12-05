@@ -26,6 +26,19 @@
   flex-direction: column;
 }
 
+:host ::ng-deep z-sidebar.custom-sidebar > aside {
+  height: 100vh !important;
+  display: flex;
+  flex-direction: column;
+}
+
+:host ::ng-deep z-sidebar.custom-sidebar > aside > div.flex-1 {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0;
+  height: 100%;
+}
+
 :host ::ng-deep z-sidebar.custom-sidebar,
 :host ::ng-deep z-sidebar.custom-sidebar *,
 :host ::ng-deep z-sidebar.custom-sidebar aside {

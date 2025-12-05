@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,4 +22,6 @@ public class OcorrenciaFilterRequest {
     private Double latitude;
     private Double longitude;
     private Double raioMetros;
+    private LocalDateTime dataInicio;
+    private LocalDateTime dataFim;
 }

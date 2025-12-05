@@ -3,12 +3,21 @@ import * as L from 'leaflet';
 import {HeatmapService} from '../services/heatmap.service';
 import {HexagonUtil} from '../utils/hexagon.util';
 import {ZardIconComponent} from '@shared/components/icon/icon.component';
+import {ZardSelectComponent} from '@shared/components/select/select.component';
+import {ZardSelectItemComponent} from '@shared/components/select/select-item.component';
 import {CommonModule} from '@angular/common';
+
+type PeriodoSelecionado = 'hoje' | 'ontem' | 'essa-semana' | 'esse-mes' | 'ultimos-90-dias' | 'ultimo-ano';
 
 @Component({
   selector: 'app-leaflet-map',
   standalone: true,
-  imports: [ZardIconComponent, CommonModule],
+  imports: [
+    ZardIconComponent, 
+    CommonModule,
+    ZardSelectComponent,
+    ZardSelectItemComponent
+  ],
   templateUrl: './leaflet.map.html',
   styleUrls: ['./leaflet.map.css',]
 })
@@ -19,6 +28,17 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
   private mapZoomEndHandler?: () => void;
   private occurrenceData: Map<string, { count: number; intensity: number; point: [number, number] }> = new Map();
   showInfoTooltip = signal(true);
+
+  periodoSelecionado = signal<PeriodoSelecionado>('esse-mes');
+  
+  periodosOptions: { value: PeriodoSelecionado; label: string }[] = [
+    { value: 'hoje', label: 'Hoje' },
+    { value: 'ontem', label: 'Ontem' },
+    { value: 'essa-semana', label: 'Essa Semana' },
+    { value: 'esse-mes', label: 'Esse Mês' },
+    { value: 'ultimos-90-dias', label: 'Últimos 90 Dias' },
+    { value: 'ultimo-ano', label: 'Último Ano' }
+  ];
 
   constructor(private heatmapService: HeatmapService) {}
 
@@ -58,45 +78,178 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * Carrega dados de ocorrências do serviço
+   * Carrega dados de ocorrências do serviço com filtro de período
    */
   loadOccurrenceData() {
-    this.heatmapService.getHexagonHeatmap().subscribe(data => {
-      // Armazena os dados de ocorrências
-      // Usa coordenadas como chave para matching geográfico
-      this.occurrenceData.clear();
-      
-      data.features.forEach((feature: any) => {
-        const coords = feature.geometry.coordinates;
-        if (coords && coords.length >= 2) {
-          // Verifica o formato: GeoJSON padrão é [lng, lat], mas nosso mock pode estar [lat, lng]
-          // Se a primeira coordenada está entre -90 e 90, provavelmente é latitude
-          let point: [number, number];
-          if (Math.abs(coords[0]) <= 90 && Math.abs(coords[1]) <= 180) {
-            // Formato [lat, lng] - já está correto
-            point = [coords[0], coords[1]];
-          } else {
-            // Formato GeoJSON padrão [lng, lat] - precisa converter
-            point = [coords[1], coords[0]];
+    const periodo = this.calcularPeriodo(this.periodoSelecionado());
+    
+    // Formatar datas no formato esperado pelo backend
+    const periodoInicio = this.formatarDataParaAPI(periodo.inicio);
+    const periodoFim = this.formatarDataParaAPI(periodo.fim);
+    
+    // Obtém os bounds visíveis do mapa se disponível
+    let bounds = null;
+    if (this.map) {
+      const mapBounds = this.map.getBounds();
+      bounds = {
+        minLat: mapBounds.getSouth(),
+        maxLat: mapBounds.getNorth(),
+        minLng: mapBounds.getWest(),
+        maxLng: mapBounds.getEast()
+      };
+    }
+    
+    this.heatmapService.getHexagonHeatmap({
+      periodoInicio,
+      periodoFim,
+      ...bounds
+    }).subscribe({
+      next: (data) => {
+        // Verifica se a resposta tem a estrutura esperada
+        if (!data || !data.features) {
+          this.occurrenceData.clear();
+          this.updateHexagonGrid();
+          return;
+        }
+        
+        // Armazena os dados de ocorrências
+        // Usa coordenadas como chave para matching geográfico
+        this.occurrenceData.clear();
+        
+        data.features.forEach((feature: any) => {
+          const geometry = feature.geometry;
+          const geometryType = geometry?.type;
+          const coords = geometry?.coordinates;
+          
+          let point: [number, number] | null = null;
+          
+          if (geometryType === 'Point' && coords && coords.length >= 2) {
+            // Point geometry: [lng, lat]
+            point = [coords[1], coords[0]]; // Converte para [lat, lng]
+          } else if (geometryType === 'Polygon' && coords && coords.length > 0) {
+            // Polygon geometry: [[[lng, lat], [lng, lat], ...]]
+            // Extrai o primeiro ring (exterior ring)
+            const ring = coords[0];
+            if (ring && ring.length > 0) {
+              // Calcula o centro do polígono (média das coordenadas)
+              let sumLat = 0;
+              let sumLng = 0;
+              let validPoints = 0;
+              
+              // Itera pelos vértices (ignora o último se for igual ao primeiro - fechamento)
+              const pointsToProcess = ring.length > 0 && 
+                ring[0][0] === ring[ring.length - 1][0] && 
+                ring[0][1] === ring[ring.length - 1][1]
+                ? ring.slice(0, -1) // Remove fechamento
+                : ring;
+              
+              pointsToProcess.forEach((vertex: number[]) => {
+                if (vertex && vertex.length >= 2) {
+                  sumLng += vertex[0]; // lng
+                  sumLat += vertex[1]; // lat
+                  validPoints++;
+                }
+              });
+              
+              if (validPoints > 0) {
+                const centerLng = sumLng / validPoints;
+                const centerLat = sumLat / validPoints;
+                point = [centerLat, centerLng]; // [lat, lng] para Leaflet
+              }
+            }
           }
           
-          const key = `${point[0].toFixed(4)}_${point[1].toFixed(4)}`;
-          
-          console.log(`Carregando ocorrência: ponto [${point[0]}, ${point[1]}], count: ${feature.properties?.occurrenceCount || 0}`);
-          
-          this.occurrenceData.set(key, {
-            count: feature.properties?.occurrenceCount || 0,
-            intensity: feature.properties?.intensity || 0,
-            point: point
-          });
-        }
-      });
-      
-      console.log(`Total de ${this.occurrenceData.size} ocorrências carregadas`);
+          if (point) {
+            const key = `${point[0].toFixed(4)}_${point[1].toFixed(4)}`;
+            
+            this.occurrenceData.set(key, {
+              count: feature.properties?.occurrenceCount || 0,
+              intensity: feature.properties?.intensity || 0,
+              point: point
+            });
+          }
+        });
 
-      // Gera a grade hexagonal após carregar os dados
-      this.updateHexagonGrid();
+        // Gera a grade hexagonal após carregar os dados
+        this.updateHexagonGrid();
+      },
+      error: (error) => {
+        // Limpa dados em caso de erro
+        this.occurrenceData.clear();
+        this.updateHexagonGrid();
+      }
     });
+  }
+
+  /**
+   * Handler para mudança de período
+   */
+  onPeriodoChange(value: string | string[]) {
+    const periodo = Array.isArray(value) ? value[0] : value;
+    this.periodoSelecionado.set(periodo as PeriodoSelecionado);
+    // Recarregar dados do mapa com o novo período
+    this.loadOccurrenceData();
+  }
+
+  /**
+   * Calcula as datas de início e fim baseado no período selecionado
+   */
+  private calcularPeriodo(periodo: PeriodoSelecionado): { inicio: Date; fim: Date } {
+    const agora = new Date();
+    const inicio = new Date();
+    const fim = new Date();
+    
+    // Resetar horas para início do dia
+    inicio.setHours(0, 0, 0, 0);
+    fim.setHours(23, 59, 59, 999);
+    
+    switch (periodo) {
+      case 'hoje':
+        // Já está configurado acima
+        break;
+        
+      case 'ontem':
+        inicio.setDate(inicio.getDate() - 1);
+        fim.setDate(fim.getDate() - 1);
+        break;
+        
+      case 'essa-semana':
+        // Segunda-feira da semana atual
+        const diaSemana = inicio.getDay(); // 0 = domingo, 1 = segunda, ..., 6 = sábado
+        const diasParaSegunda = diaSemana === 0 ? -6 : 1 - diaSemana;
+        inicio.setDate(inicio.getDate() + diasParaSegunda);
+        break;
+        
+      case 'esse-mes':
+        inicio.setDate(1); // Primeiro dia do mês
+        break;
+        
+      case 'ultimos-90-dias':
+        inicio.setDate(inicio.getDate() - 90);
+        break;
+        
+      case 'ultimo-ano':
+        inicio.setFullYear(inicio.getFullYear() - 1);
+        inicio.setMonth(0, 1); // Janeiro do ano passado
+        inicio.setDate(1);
+        break;
+    }
+    
+    return { inicio, fim };
+  }
+
+  /**
+   * Formata uma data para o formato esperado pela API (yyyy-MM-ddTHH:mm:ss)
+   */
+  private formatarDataParaAPI(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
   }
 
   /**
@@ -129,20 +282,10 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
       },
       hexSize: 200 // Não usado diretamente, mas mantido para compatibilidade
     });
-    
-    console.log(`Zoom: ${zoom}, Bounds expandidos:`, { 
-      north: north + margin, 
-      south: south - margin, 
-      east: east + margin, 
-      west: west - margin 
-    });
 
     // Encontra ocorrências para cada hexágono baseado na localização geográfica
     // Usa coordenadas fixas para garantir que cada ocorrência sempre pertence ao mesmo hexágono
     const hexagonOccurrences = new Map<string, number>();
-    
-    console.log('Total de ocorrências carregadas:', this.occurrenceData.size);
-    console.log('Total de hexágonos gerados:', hexagons.length);
     
     this.occurrenceData.forEach((data, key) => {
       // Tenta encontrar o hexágono que contém este ponto usando a lista de hexágonos gerados
@@ -156,21 +299,14 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
       if (containingHex) {
         const current = hexagonOccurrences.get(containingHex.id) || 0;
         hexagonOccurrences.set(containingHex.id, current + data.count);
-        console.log(`Ocorrência em ${data.point} atribuída ao hexágono ${containingHex.id}, total: ${current + data.count}`);
-      } else {
-        console.warn(`Não foi possível encontrar hexágono para ocorrência em ${data.point}`);
       }
     });
-    
-    console.log('Hexágonos com ocorrências:', hexagonOccurrences.size);
 
     // Encontra o máximo de ocorrências para normalizar cores
     const maxOccurrences = Math.max(
       ...Array.from(hexagonOccurrences.values()),
       1
     );
-
-    console.log('Máximo de ocorrências:', maxOccurrences);
     
     // Renderiza cada hexágono
     hexagons.forEach(hex => {
@@ -180,10 +316,6 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
         : 0;
       
       const color = HexagonUtil.getColorByIntensity(intensity);
-      
-      if (count > 0) {
-        console.log(`Hexágono ${hex.id}: ${count} ocorrências, intensidade: ${intensity}, cor: ${color}`);
-      }
       
       // Cria o polígono do hexágono
       // Bordas brancas finas para separação visual, mas hexágonos estão perfeitamente colados

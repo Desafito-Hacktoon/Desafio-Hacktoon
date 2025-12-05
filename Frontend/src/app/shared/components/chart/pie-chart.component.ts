@@ -17,12 +17,5 @@ import { Piechart } from '../../../models/piechart';
 })
 export class ZardPieChartComponent {
   readonly chartData = input.required<Piechart>();
-  readonly chartOptions = input<any>({
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'bottom',
-      },
-    },
-  });
+  readonly chartOptions = input<any>();
 }

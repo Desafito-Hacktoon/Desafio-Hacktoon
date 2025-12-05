@@ -3,60 +3,52 @@
         <h2 class="text-2xl font-bold text-center mb-6 text-blue-600">Cadastro</h2>
 
         <form (ngSubmit)="onSubmit()" #signupForm="ngForm">
-            <!-- Nome -->
-            <div class="mb-4">
-                <label class="block text-gray-700">Nome</label>
-                <input
-                        type="text"
-                        [(ngModel)]="name"
-                        name="name"
-                        required
-                        class="w-full border rounded px-3 py-2"
-                />
+            <div *ngIf="errorMessage" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {{ errorMessage }}
             </div>
 
-            <!-- Email -->
             <div class="mb-4">
-                <label class="block text-gray-700">Email</label>
-                <input
-                        type="email"
-                        [(ngModel)]="email"
-                        name="email"
-                        required
-                        class="w-full border rounded px-3 py-2"
-                />
+                <label class="block text-gray-700 mb-2">Username</label>
+                <input type="text" [(ngModel)]="username" name="username" required [disabled]="isLoading" minlength="3"
+                    maxlength="50"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Digite seu username" />
             </div>
 
-            <!-- Senha -->
             <div class="mb-4">
-                <label class="block text-gray-700">Senha</label>
-                <input
-                        type="password"
-                        [(ngModel)]="password"
-                        name="password"
-                        required
-                        class="w-full border rounded px-3 py-2"
-                />
+                <label class="block text-gray-700 mb-2">Nome Completo (Opcional)</label>
+                <input type="text" [(ngModel)]="nomeCompleto" name="nomeCompleto" [disabled]="isLoading" maxlength="100"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Digite seu nome completo" />
             </div>
 
-            <!-- Confirmar Senha -->
             <div class="mb-4">
-                <label class="block text-gray-700">Confirmar Senha</label>
-                <input
-                        type="password"
-                        [(ngModel)]="confirmPassword"
-                        name="confirmPassword"
-                        required
-                        class="w-full border rounded px-3 py-2"
-                />
+                <label class="block text-gray-700 mb-2">Email</label>
+                <input type="email" [(ngModel)]="email" name="email" required [disabled]="isLoading"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Digite seu email" />
             </div>
 
-            <!-- Botão -->
-            <button
-                    type="submit"
-                    class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
-            >
-                Criar Conta
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Senha</label>
+                <input type="password" [(ngModel)]="password" name="password" required [disabled]="isLoading"
+                    minlength="8"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Mínimo 8 caracteres" />
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Confirmar Senha</label>
+                <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required
+                    [disabled]="isLoading"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Confirme sua senha" />
+            </div>
+
+            <button type="submit" [disabled]="isLoading"
+                class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                <span *ngIf="!isLoading">Criar Conta</span>
+                <span *ngIf="isLoading">Criando conta...</span>
             </button>
         </form>
     </div>

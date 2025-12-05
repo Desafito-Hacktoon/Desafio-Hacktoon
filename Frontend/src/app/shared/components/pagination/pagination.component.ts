@@ -156,7 +156,7 @@ export class ZardPaginationEllipsisComponent {
   exportAs: 'zPagination',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  imports: [ZardPaginationContentComponent, ZardPaginationItemComponent, ZardPaginationButtonComponent, ZardIconComponent],
+  imports: [ZardPaginationContentComponent, ZardPaginationItemComponent, ZardPaginationButtonComponent, ZardPaginationEllipsisComponent, ZardIconComponent],
   template: `
     <z-pagination-content>
       <z-pagination-item>
@@ -166,11 +166,17 @@ export class ZardPaginationEllipsisComponent {
       </z-pagination-item>
 
       @for (page of pages(); track page) {
-        <z-pagination-item>
-          <z-pagination-button [zSize]="zSize()" [zActive]="page === currentPage()" [zDisabled]="disabled()" (zClick)="goToPage(page)">
-            {{ page }}
-          </z-pagination-button>
-        </z-pagination-item>
+        @if (page === 'ellipsis') {
+          <z-pagination-item>
+            <z-pagination-ellipsis />
+          </z-pagination-item>
+        } @else {
+          <z-pagination-item>
+            <z-pagination-button [zSize]="zSize()" [zActive]="page === currentPage()" [zDisabled]="disabled()" (zClick)="goToPage(page)">
+              {{ page }}
+            </z-pagination-button>
+          </z-pagination-item>
+        }
       }
 
       <z-pagination-item>
@@ -209,7 +215,53 @@ export class ZardPaginationComponent implements ControlValueAccessor {
 
   readonly currentPage = linkedSignal(this.zPageIndex);
 
-  readonly pages = computed<number[]>(() => Array.from({ length: Math.max(0, this.zTotal()) }, (_, i) => i + 1));
+  readonly pages = computed<(number | 'ellipsis')[]>(() => {
+    const total = this.zTotal();
+    const current = this.currentPage();
+    const maxVisible = 7; // Número máximo de páginas visíveis (incluindo ellipsis)
+    
+    if (total <= maxVisible) {
+      // Se o total de páginas for menor ou igual ao máximo, mostra todas
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    
+    const pages: (number | 'ellipsis')[] = [];
+    const sidePages = 2;
+    
+    pages.push(1);
+    
+    let start = Math.max(2, current - sidePages);
+    let end = Math.min(total - 1, current + sidePages);
+    
+    // Ajusta o range se estiver muito próximo do início ou fim
+    if (current <= sidePages + 2) {
+      end = Math.min(total - 1, maxVisible - 2);
+    } else if (current >= total - sidePages - 1) {
+      start = Math.max(2, total - maxVisible + 3);
+    }
+    
+    // Adiciona ellipsis antes do range central se necessário
+    if (start > 2) {
+      pages.push('ellipsis');
+    }
+    
+    // Adiciona as páginas do range central
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    
+    // Adiciona ellipsis depois do range central se necessário
+    if (end < total - 1) {
+      pages.push('ellipsis');
+    }
+    
+    // Sempre mostra a última página
+    if (total > 1) {
+      pages.push(total);
+    }
+    
+    return pages;
+  });
 
   goToPage(page: number): void {
     if (this.disabled()) return;

@@ -1,4 +1,19 @@
 <div class="font-sans">
+  <div class="mb-6 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <label class="text-sm font-medium text-gray-700">Período:</label>
+      <z-select [zValue]="periodoSelecionado()" zSize="default" zPlaceholder="Selecione o período"
+        (zSelectionChange)="onPeriodoChange($event)" class="w-48">
+        @for (periodo of periodosOptions; track periodo.value) {
+        <z-select-item [zValue]="periodo.value">{{ periodo.label }}</z-select-item>
+        }
+      </z-select>
+    </div>
+    @if (isLoadingStats()) {
+    <div class="text-sm text-gray-500">Carregando...</div>
+    }
+  </div>
+
   <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
     <z-card zTitle="Total de Ocorrências">
       <div class="text-2xl font-semibold text-gray-900">{{ totalOcorrencias() }}</div>
@@ -13,7 +28,7 @@
     </z-card>
   </div>
 
-  <z-card zTitle="Ocorrências do mês">
+  <z-card zTitle="Ocorrências do Período">
     <div class="space-y-4">
       <div class="p-3 bg-gray-50 rounded-lg border">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
@@ -121,8 +136,9 @@
                 </span>
               </td>
               <td z-table-cell class="px-4 py-3 text-center border-b border-gray-200">
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full" [class]="ocorrencia.status === 'FECHADO' || ocorrencia.status === 'Resolvido' ? 'bg-green-100 text-green-800' :
-                                   ocorrencia.status === 'EM_ANDAMENTO' || ocorrencia.status === 'Em Andamento' ? 'bg-blue-100 text-blue-800' :
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full" [class]="ocorrencia.status === 'RESOLVIDO' ? 'bg-green-100 text-green-800' :
+                                   ocorrencia.status === 'EM_ANDAMENTO' ? 'bg-blue-100 text-blue-800' :
+                                   ocorrencia.status === 'CANCELADO' ? 'bg-red-100 text-red-800' :
                                    'bg-gray-100 text-gray-800'">
                   {{ ocorrencia.status }}
                 </span>
@@ -137,7 +153,7 @@
             } @empty {
             <tr z-table-row>
               <td z-table-cell [attr.colspan]="8" class="text-center py-8 text-gray-500 text-sm">
-                Nenhuma ocorrência encontrada neste mês
+                Nenhuma ocorrência encontrada no período selecionado
               </td>
             </tr>
             }
@@ -191,26 +207,10 @@
 
   <z-card zTitle="Ocorrências por Período" class="mt-6">
     <div class="mb-4 p-3 bg-gray-50 rounded-lg border">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
-        <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-600">Data Início</label>
-          <z-date-picker [value]="dataInicio()" (dateChange)="onDataInicioChange($event)"
-            placeholder="Selecione a data inicial" zFormat="dd/MM/yyyy" zSize="default" class="w-full text-sm" />
-        </div>
-
-        <div class="space-y-1">
-          <label class="text-sm font-medium text-gray-600">Data Fim</label>
-          <z-date-picker [value]="dataFim()" (dateChange)="onDataFimChange($event)" placeholder="Selecione a data final"
-            zFormat="dd/MM/yyyy" zSize="default" [minDate]="dataInicio()" class="w-full text-sm" />
-        </div>
-
-        <div class="flex items-end h-full">
-          <button z-button zSize="sm" (click)="onPeriodoChange()"
-            class="!bg-black !text-white hover:!bg-gray-800 !border-0 w-full">
-            Atualizar Gráfico
-          </button>
-        </div>
-      </div>
+      <p class="text-sm text-gray-600">
+        O gráfico abaixo mostra as ocorrências do período selecionado no filtro acima: <strong>{{
+          periodoSelecionadoLabel() }}</strong>
+      </p>
     </div>
 
     @if (lineChartData) {

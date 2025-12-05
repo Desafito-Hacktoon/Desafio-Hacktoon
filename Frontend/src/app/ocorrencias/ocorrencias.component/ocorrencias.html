@@ -114,8 +114,9 @@
                 </span>
               </td>
               <td z-table-cell class="px-4 py-3 text-center border-b border-gray-200">
-                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full" [class]="ocorrencia.status === 'FECHADO' || ocorrencia.status === 'Resolvido' ? 'bg-green-100 text-green-800' :
-                                   ocorrencia.status === 'EM_ANDAMENTO' || ocorrencia.status === 'Em Andamento' ? 'bg-blue-100 text-blue-800' :
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full" [class]="ocorrencia.status === 'RESOLVIDO' ? 'bg-green-100 text-green-800' :
+                                   ocorrencia.status === 'EM_ANDAMENTO' ? 'bg-blue-100 text-blue-800' :
+                                   ocorrencia.status === 'CANCELADO' ? 'bg-red-100 text-red-800' :
                                    'bg-gray-100 text-gray-800'">
                   {{ ocorrencia.status }}
                 </span>

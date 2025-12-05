@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,8 +45,6 @@ public class OcorrenciaService {
      */
     @CacheEvict(value = {CACHE_OCORRENCIAS, CACHE_STATS, CACHE_BAIRROS_CRITICOS}, allEntries = true)
     public OcorrenciaResponse criar(OcorrenciaRequest request) {
-        log.info("Criando nova ocorrência: tipo={}, bairro={}", request.getTipoProblema(), request.getBairro());
-        
         Ocorrencia ocorrencia = mapper.toEntity(request);
         
         if (request.getGravidadeIA() == null) {
@@ -54,9 +53,6 @@ public class OcorrenciaService {
             
             if (ocorrencia.getGravidade() == null) {
                 ocorrencia.setGravidade(gravidadeIA);
-                log.info("Gravidade definida pela IA: {}", gravidadeIA);
-            } else {
-                log.info("Gravidade manual: {}, Gravidade IA: {}", ocorrencia.getGravidade(), gravidadeIA);
             }
         } else if (ocorrencia.getGravidade() == null) {
             ocorrencia.setGravidade(ocorrencia.getGravidadeIA());
@@ -64,8 +60,6 @@ public class OcorrenciaService {
         
         Ocorrencia saved = repository.save(ocorrencia);
         
-        log.info("Ocorrência criada com sucesso: id={}, gravidade={}, gravidadeIA={}", 
-                saved.getId(), saved.getGravidade(), saved.getGravidadeIA());
         return mapper.toResponse(saved);
     }
 
@@ -85,19 +79,26 @@ public class OcorrenciaService {
 
     /**
      * Lista ocorrências com filtros e paginação.
+     * Cache desabilitado quando há filtros de data para garantir resultados atualizados.
      */
-    @Cacheable(value = CACHE_OCORRENCIAS)
     @Transactional(readOnly = true)
     public PagedResponse<OcorrenciaResponse> listar(OcorrenciaFilterRequest filtros, Pageable pageable) {
-        log.debug("Listando ocorrências com filtros: {}", filtros);
+        // Converter enums para String para query nativa
+        String tipoProblemaStr = filtros.getTipoProblema() != null ? filtros.getTipoProblema().name() : null;
+        String statusStr = filtros.getStatus() != null ? filtros.getStatus().name() : null;
+        
+        // Criar Pageable sem Sort para evitar conflito com ORDER BY da query nativa
+        Pageable pageableWithoutSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
         
         Page<Ocorrencia> page = repository.findByFilters(
-                filtros.getTipoProblema(),
+                tipoProblemaStr,
                 filtros.getBairro(),
-                filtros.getStatus(),
+                statusStr,
                 filtros.getGravidadeMin(),
                 filtros.getGravidadeMax(),
-                pageable
+                filtros.getDataInicio(),
+                filtros.getDataFim(),
+                pageableWithoutSort
         );
         
         return toPagedResponse(page);
@@ -138,15 +139,12 @@ public class OcorrenciaService {
      */
     @CacheEvict(value = {CACHE_OCORRENCIAS, CACHE_STATS, CACHE_BAIRROS_CRITICOS}, allEntries = true)
     public OcorrenciaResponse atualizar(UUID id, OcorrenciaRequest request) {
-        log.info("Atualizando ocorrência: id={}", id);
-        
         Ocorrencia ocorrencia = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Ocorrência não encontrada com ID: " + id));
         
         mapper.updateEntity(ocorrencia, request);
         Ocorrencia updated = repository.save(ocorrencia);
         
-        log.info("Ocorrência atualizada com sucesso: id={}", updated.getId());
         return mapper.toResponse(updated);
     }
 
@@ -155,8 +153,6 @@ public class OcorrenciaService {
      */
     @CacheEvict(value = {CACHE_OCORRENCIAS, CACHE_STATS, CACHE_BAIRROS_CRITICOS}, allEntries = true)
     public OcorrenciaResponse atualizarStatus(UUID id, StatusOcorrencia status) {
-        log.info("Atualizando status da ocorrência: id={}, status={}", id, status);
-        
         Ocorrencia ocorrencia = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Ocorrência não encontrada com ID: " + id));
         
@@ -171,14 +167,11 @@ public class OcorrenciaService {
      */
     @CacheEvict(value = {CACHE_OCORRENCIAS, CACHE_STATS, CACHE_BAIRROS_CRITICOS}, allEntries = true)
     public void remover(UUID id) {
-        log.info("Removendo ocorrência: id={}", id);
-        
         if (!repository.existsById(id)) {
             throw new EntityNotFoundException("Ocorrência não encontrada com ID: " + id);
         }
         
         repository.deleteById(id);
-        log.info("Ocorrência removida com sucesso: id={}", id);
     }
 
     /**
