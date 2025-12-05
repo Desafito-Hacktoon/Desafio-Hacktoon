@@ -239,8 +239,11 @@
             @for (ocorrencia of paginatedOcorrencias(); track ocorrencia.id) {
             <tr z-table-row class="cursor-pointer hover:bg-gray-50 border-b border-gray-200"
               (click)="navigateToDetail(ocorrencia.id)">
-              <td z-table-cell class="px-4 py-3 text-sm text-gray-700 whitespace-nowrap border-b border-gray-200">
-                {{ ocorrencia.dataCriacao | date:'dd/MM/yyyy HH:mm' }}
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
+                <div class="flex flex-col">
+                  <span class="text-xs text-gray-900">{{ ocorrencia.dataCriacao | date:'dd/MM/yyyy' }}</span>
+                  <span class="text-xs text-gray-900">{{ ocorrencia.dataCriacao | date:'HH:mm' }}</span>
+                </div>
               </td>
               <td z-table-cell class="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-200">
                 {{ formatarTipoProblema(ocorrencia.tipoProblema) }}
@@ -267,8 +270,11 @@
               <td z-table-cell class="px-4 py-3 text-sm text-gray-600 border-b border-gray-200">
                 {{ ocorrencia.secretariaOrigem }}
               </td>
-              <td z-table-cell class="px-4 py-3 text-sm text-gray-500 whitespace-nowrap border-b border-gray-200">
-                {{ ocorrencia.dataAtualizacao | date:'dd/MM/yyyy HH:mm' }}
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-500 border-b border-gray-200">
+                <div class="flex flex-col">
+                  <span class="text-xs text-gray-900">{{ ocorrencia.dataAtualizacao | date:'dd/MM/yyyy' }}</span>
+                  <span class="text-xs text-gray-900">{{ ocorrencia.dataAtualizacao | date:'HH:mm' }}</span>
+                </div>
               </td>
             </tr>
             } @empty {
