@@ -1,11 +1,15 @@
-import {AfterViewInit, Component, OnDestroy, signal, computed} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, signal, computed, inject} from '@angular/core';
 import * as L from 'leaflet';
 import {HeatmapService} from '../services/heatmap.service';
-import {HexagonUtil} from '../utils/hexagon.util';
+import {HexagonUtil, Hexagon} from '../utils/hexagon.util';
 import {ZardIconComponent} from '@shared/components/icon/icon.component';
 import {ZardSegmentedComponent} from '@shared/components/segmented/segmented.component';
 import {ZardDatePickerComponent} from '@shared/components/date-picker/date-picker.component';
 import {CommonModule} from '@angular/common';
+import {Overlay} from '@angular/cdk/overlay';
+import {ComponentPortal} from '@angular/cdk/portal';
+import {HexagonOccurrencesModalComponent} from '../components/hexagon-occurrences-modal.component';
+import {OcorreciasService} from '../../ocorrencias/ocorrenciasService/ocorrecias-service';
 
 type PeriodoSelecionado = 'hoje' | 'ontem' | 'essa-semana' | 'esse-mes' | '';
 
@@ -22,12 +26,19 @@ type PeriodoSelecionado = 'hoje' | 'ontem' | 'essa-semana' | 'esse-mes' | '';
   styleUrls: ['./leaflet.map.css',]
 })
 export class LeafletMapComponent implements AfterViewInit, OnDestroy {
+  private readonly overlay = inject(Overlay);
+  private readonly ocorrenciasService = inject(OcorreciasService);
+  private modalOverlayRef?: any;
+
   map: any;
   hexagonLayers!: L.LayerGroup;
   private mapMoveEndHandler?: () => void;
   private mapZoomEndHandler?: () => void;
   private occurrenceData: Map<string, { count: number; intensity: number; point: [number, number] }> = new Map();
   showInfoTooltip = signal(true);
+  
+  // Armazena os hexágonos renderizados para poder buscar ocorrências depois
+  private renderedHexagons = new Map<string, Hexagon>();
 
   periodoSelecionado = signal<PeriodoSelecionado>('esse-mes');
   
@@ -381,23 +392,17 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
         opacity: 1.0
       });
 
-      // Adiciona popup com informações
+      // Adiciona evento de clique para abrir modal com ocorrências
       if (count > 0) {
-        const popupContent = `
-          <div style="padding: 8px;">
-            <strong>Hexágono ${hex.id}</strong><br>
-            <span style="color: ${color}; font-weight: bold;">
-              Ocorrências: ${count}
-            </span>
-          </div>
-        `;
-        hexagonPolygon.bindPopup(popupContent);
+        hexagonPolygon.on('click', () => {
+          this.abrirModalOcorrencias(hex);
+        });
       }
 
       // Adiciona tooltip ao passar o mouse
       if (count > 0) {
         hexagonPolygon.bindTooltip(
-          `${count} ocorrência${count !== 1 ? 's' : ''}`,
+          `${count} ocorrência${count !== 1 ? 's' : ''} - Clique para ver detalhes`,
           {
             permanent: false,
             direction: 'top',
@@ -413,5 +418,86 @@ export class LeafletMapComponent implements AfterViewInit, OnDestroy {
 
   toggleInfoTooltip() {
     this.showInfoTooltip.set(!this.showInfoTooltip());
+  }
+
+  /**
+   * Abre modal com ocorrências do hexágono selecionado
+   */
+  private abrirModalOcorrencias(hex: Hexagon) {
+    // Fecha modal anterior se existir
+    if (this.modalOverlayRef) {
+      this.modalOverlayRef.detach();
+    }
+
+    // Cria overlay para o modal
+    const overlayRef = this.overlay.create({
+      positionStrategy: this.overlay.position().global().centerHorizontally().centerVertically(),
+      hasBackdrop: false,
+      scrollStrategy: this.overlay.scrollStrategies.block(),
+    });
+
+    // Calcula bounding box do hexágono
+    const coordinates = hex.coordinates;
+    const lats = coordinates.map(coord => coord[0]);
+    const lngs = coordinates.map(coord => coord[1]);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLng = Math.min(...lngs);
+    const maxLng = Math.max(...lngs);
+
+    // Calcula período atual
+    const periodo = this.calcularPeriodo();
+    const periodoInicio = this.formatarDataParaAPI(periodo.inicio);
+    const periodoFim = this.formatarDataParaAPI(periodo.fim);
+
+    // Cria componente do modal
+    const modalComponent = new ComponentPortal(HexagonOccurrencesModalComponent);
+    const modalInstance = overlayRef.attach(modalComponent);
+    const modalComponentInstance = modalInstance.instance as HexagonOccurrencesModalComponent;
+    
+    // Define loading inicial
+    modalComponentInstance.isLoading.set(true);
+    modalComponentInstance.ocorrencias.set([]);
+
+    // Busca ocorrências dentro do hexágono
+    this.ocorrenciasService.listar({
+      dataInicio: periodoInicio,
+      dataFim: periodoFim
+    }, 0, 1000).subscribe({
+      next: (response) => {
+        // Filtra ocorrências que estão dentro do hexágono
+        const ocorrenciasNoHexagono = response.content.filter(oc => {
+          const lat = oc.latitude;
+          const lng = oc.longitude;
+          
+          // Verifica se está dentro do bounding box primeiro (otimização)
+          if (lat < minLat || lat > maxLat || lng < minLng || lng > maxLng) {
+            return false;
+          }
+          
+          // Verifica se está dentro do hexágono usando o utilitário
+          const point: [number, number] = [lat, lng];
+          const hexContainingPoint = HexagonUtil.findHexagonContainingPoint(point);
+          
+          return hexContainingPoint?.id === hex.id;
+        });
+
+        modalComponentInstance.isLoading.set(false);
+        modalComponentInstance.ocorrencias.set(ocorrenciasNoHexagono);
+      },
+      error: (error) => {
+        console.error('Erro ao buscar ocorrências:', error);
+        modalComponentInstance.isLoading.set(false);
+        modalComponentInstance.ocorrencias.set([]);
+      }
+    });
+
+    // Fecha modal quando o componente emitir close
+    modalComponentInstance.close.subscribe(() => {
+      overlayRef.detach();
+      this.modalOverlayRef = undefined;
+    });
+
+    this.modalOverlayRef = overlayRef;
   }
 }
