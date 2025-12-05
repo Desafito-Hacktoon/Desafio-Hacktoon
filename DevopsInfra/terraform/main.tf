@@ -209,8 +209,10 @@ resource "aws_instance" "BluLabs_server" {
     /home/ubuntu/flutter/bin/flutter build web
 
     # Instalar NVM e Node.js
+    su - ubuntu -c '
+    # Instala NVM e Node.js
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-    export NVM_DIR="/home/ubuntu/.nvm"
+    export NVM_DIR="$HOME/.nvm"
     source "$NVM_DIR/nvm.sh"
     nvm install 22
     nvm use 22
@@ -219,6 +221,9 @@ resource "aws_instance" "BluLabs_server" {
     cd /home/ubuntu/Desafio-Hackathon/Frontend
     npm install --legacy-peer-deps
     npm run build -- --configuration production
+    '
+
+
 
 
 
