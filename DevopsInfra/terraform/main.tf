@@ -189,8 +189,10 @@ resource "aws_instance" "BluLabs_server" {
 
     # Instalar Flutter SDK
     git clone https://github.com/flutter/flutter.git -b stable /home/ubuntu/flutter
-    echo 'export PATH="$PATH:/home/ubuntu/flutter/bin"' >> /home/ubuntu/.bashrc
-    source /home/ubuntu/.bashrc
+    echo 'export PATH="$PATH:/home/ubuntu/flutter/bin"' >> /etc/profile
+    export PATH="$PATH:/home/ubuntu/flutter/bin"
+
+    
 
     # Marca diretório Flutter como seguro para Git
     git config --global --add safe.directory /home/ubuntu/flutter
@@ -201,9 +203,9 @@ resource "aws_instance" "BluLabs_server" {
 
     # Build do Flutter Web
     cd /home/ubuntu/Desafio-Hackathon/App-Flutter
-    /home/ubuntu/flutter/bin/flutter clean
-    /home/ubuntu/flutter/bin/flutter pub get
-    /home/ubuntu/flutter/bin/flutter build web
+    flutter clean
+    flutter pub get
+    flutter build web
 
     # Build da imagem Docker
     cd /home/ubuntu/Desafio-Hackathon
