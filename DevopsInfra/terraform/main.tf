@@ -208,11 +208,19 @@ resource "aws_instance" "BluLabs_server" {
     /home/ubuntu/flutter/bin/flutter pub get
     /home/ubuntu/flutter/bin/flutter build web
 
-    # Build do Angular (gera dist/heat-map-app)
+    # Instala NVM e Node.js
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+    export NVM_DIR="$HOME/.nvm"
+    source "$NVM_DIR/nvm.sh"
+    nvm install 22
+    nvm use 22
+
+    # Build do Angular
     cd /home/ubuntu/Desafio-Hackathon/Frontend
-    rm -rf node_modules package-lock.json
     npm install --legacy-peer-deps
     npm run build -- --configuration production
+
+
 
 
     # Build da imagem Docker
