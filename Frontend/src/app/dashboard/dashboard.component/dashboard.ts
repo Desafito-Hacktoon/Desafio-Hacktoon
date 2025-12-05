@@ -364,10 +364,24 @@ export class Dashboard implements OnInit {
         {
           label: 'Ocorrências',
           data: dados,
-          borderColor: '#3B82F6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderColor: '#135ce4', // Azul do ícone do título
+          backgroundColor: (context: any) => {
+            const ctx = context.chart.ctx;
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(19, 92, 228, 0.3)'); // Azul mais escuro no topo
+            gradient.addColorStop(1, 'rgba(19, 92, 228, 0.05)'); // Azul muito claro na parte inferior
+            return gradient;
+          },
           fill: true,
           tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: '#135ce4',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointHoverRadius: 6,
+          pointHoverBackgroundColor: '#0f4bc4',
+          pointHoverBorderColor: '#ffffff',
+          pointHoverBorderWidth: 2,
         },
       ],
     };
@@ -377,19 +391,27 @@ export class Dashboard implements OnInit {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: true,
-          position: 'top',
+          display: false, // Remover legenda como na imagem
         },
         tooltip: {
           mode: 'index',
           intersect: false,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: 12,
+          titleFont: {
+            size: 14,
+            weight: 'bold',
+          },
+          bodyFont: {
+            size: 13,
+          },
           callbacks: {
             title: (context: any) => {
               const index = context[0].dataIndex;
               return todasAsDatas[index];
             },
             label: (context: any) => {
-              return `${context.dataset.label}: ${context.parsed.y} ocorrência(s)`;
+              return `${context.parsed.y} ocorrência(s)`;
             },
           },
         },
@@ -398,22 +420,39 @@ export class Dashboard implements OnInit {
         x: {
           display: true,
           title: {
-            display: true,
-            text: 'Data',
+            display: false, // Remover título do eixo X
           },
           grid: {
-            display: false,
+            display: true,
+            drawBorder: false,
+            color: 'rgba(0, 0, 0, 0.05)',
+            borderDash: [5, 5], // Linha pontilhada
+          },
+          ticks: {
+            color: '#6b7280',
+            font: {
+              size: 12,
+            },
           },
         },
         y: {
           display: true,
           title: {
-            display: true,
-            text: 'Quantidade de Ocorrências',
+            display: false, // Remover título do eixo Y
           },
           beginAtZero: true,
+          grid: {
+            display: true,
+            drawBorder: false,
+            color: 'rgba(0, 0, 0, 0.05)',
+            borderDash: [5, 5], // Linha pontilhada
+          },
           ticks: {
-            stepSize: 1,
+            color: '#6b7280',
+            font: {
+              size: 12,
+            },
+            stepSize: undefined, // Deixar Chart.js calcular automaticamente
             precision: 0,
           },
         },

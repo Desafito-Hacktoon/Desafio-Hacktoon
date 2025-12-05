@@ -6,10 +6,18 @@ export interface LineChartData {
   datasets: {
     label: string;
     data: number[];
-    borderColor: string;
-    backgroundColor: string;
+    backgroundColor?: string | ((context: any) => CanvasGradient);
+    borderColor?: string;
     fill?: boolean;
     tension?: number;
+    pointRadius?: number;
+    pointBackgroundColor?: string;
+    pointBorderColor?: string;
+    pointBorderWidth?: number;
+    pointHoverRadius?: number;
+    pointHoverBackgroundColor?: string;
+    pointHoverBorderColor?: string;
+    pointHoverBorderWidth?: number;
   }[];
 }
 

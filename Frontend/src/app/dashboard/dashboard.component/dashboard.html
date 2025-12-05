@@ -114,6 +114,29 @@
     </z-card>
   </div>
 
+  <ng-template #ocorrenciasPorPeriodoTitle>
+    <div class="flex items-center gap-2">
+      <z-icon zType="layers-2" zSize="default" class="text-gray-600"></z-icon>
+      <span class="font-medium">Ocorrências por Período</span>
+    </div>
+  </ng-template>
+  <z-card [zTitle]="ocorrenciasPorPeriodoTitle" class="mb-6">
+    <div class="mb-4 p-3 bg-gray-50 rounded-lg border">
+      <p class="text-sm text-gray-600">
+        O gráfico abaixo mostra as ocorrências do período selecionado no filtro acima: <strong>{{
+          periodoSelecionadoLabel() }}</strong>
+      </p>
+    </div>
+
+    @if (lineChartData) {
+    <z-line-chart [chartData]="lineChartData" [chartOptions]="lineChartOptions" />
+    } @else {
+    <div class="h-[400px] flex items-center justify-center text-gray-500">
+      Carregando gráfico...
+    </div>
+    }
+  </z-card>
+
   <ng-template #ocorrenciasDoPeriodoTitle>
     <div class="flex items-center gap-2">
       <z-icon zType="calendar" zSize="default" class="text-gray-600"></z-icon>
@@ -316,27 +339,4 @@
       <z-pie-chart [chartData]="pieData3" [chartOptions]="pieOptions3" />
     </z-card>
   </div>
-
-  <ng-template #ocorrenciasPorPeriodoTitle>
-    <div class="flex items-center gap-2">
-      <z-icon zType="layers-2" zSize="default" class="text-gray-600"></z-icon>
-      <span class="font-medium">Ocorrências por Período</span>
-    </div>
-  </ng-template>
-  <z-card [zTitle]="ocorrenciasPorPeriodoTitle" class="mt-6">
-    <div class="mb-4 p-3 bg-gray-50 rounded-lg border">
-      <p class="text-sm text-gray-600">
-        O gráfico abaixo mostra as ocorrências do período selecionado no filtro acima: <strong>{{
-          periodoSelecionadoLabel() }}</strong>
-      </p>
-    </div>
-
-    @if (lineChartData) {
-    <z-line-chart [chartData]="lineChartData" [chartOptions]="lineChartOptions" />
-    } @else {
-    <div class="h-[400px] flex items-center justify-center text-gray-500">
-      Carregando gráfico...
-    </div>
-    }
-  </z-card>
 </div>
