@@ -186,43 +186,31 @@ resource "aws_instance" "BluLabs_server" {
     git clone -b develop https://github.com/Desafito-Hacktoon/Desafio-Hackathon.git
     
     # Instalar Flutter SDK
-    if [ ! -d "/home/ubuntu/flutter" ]; then
-      git clone https://github.com/flutter/flutter.git -b stable /home/ubuntu/flutter
-    fi
+    git clone https://github.com/flutter/flutter.git -b stable /home/ubuntu/flutter
+    ln -sf /home/ubuntu/flutter/bin/flutter /usr/local/bin/flutter
+    echo 'export PATH="$PATH:/home/ubuntu/flutter/bin"' > /etc/profile.d/flutter.sh
+    chmod 644 /etc/profile.d/flutter.sh
+
+
    
     # Corrige permissões
     chown -R ubuntu:ubuntu /home/ubuntu/flutter
     chown -R ubuntu:ubuntu /home/ubuntu/Desafio-Hackathon
-
-    # Git safe directory (necessário para flutter)
     sudo -u ubuntu git config --global --add safe.directory /home/ubuntu/flutter || true
-
-    # Tornar o flutter disponível globalmente (para root, ubuntu e sudo)
-    ln -sf /home/ubuntu/flutter/bin/flutter /usr/local/bin/flutter
-
-    # Também exporta PATH para sessões futuras
-    echo 'export PATH="$PATH:/home/ubuntu/flutter/bin"' > /etc/profile.d/flutter.sh
-    chmod 644 /etc/profile.d/flutter.sh
-
-    # Pré-checagem do Flutter usando caminho absoluto (evita problemas de PATH no cloud-init)
-    # Isso vai baixar Dart SDK e preparar caches
-    /home/ubuntu/flutter/bin/flutter doctor || true
 
     # Build do Flutter Web
     cd /home/ubuntu/Desafio-Hackathon/App-Flutter
-    /home/ubuntu/flutter/bin/flutter clean || true
     /home/ubuntu/flutter/bin/flutter pub get
     /home/ubuntu/flutter/bin/flutter build web
-
 
     # Build da imagem Docker
     cd /home/ubuntu/Desafio-Hackathon
     docker build -t flutter-web -f DevopsInfra/Dockerfile.flutter .
-    docker rm -f frontend-flutter || true
 
-    # Subir container
+    # Sobe o container
     docker run -d -p 4200:80 --name frontend-flutter flutter-web
-         
+
+    
   EOF
 
     
