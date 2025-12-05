@@ -70,12 +70,15 @@ services:
     env_file:
       - .env
 
-  flutter-web:
+ 
+  frontend-flutter:
     build:
-      context: ../App-Flutter
-      dockerfile: ../DevopsInfraDockerfile.flutter
+      context: ../ 
+      dockerfile: DevopsInfra/Dockerfile.flutter
     ports:
       - "4200:80"
+    restart: unless-stopped
+
     
   frontend-angular:
     build:
