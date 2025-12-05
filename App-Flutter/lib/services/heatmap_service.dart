@@ -11,8 +11,8 @@ class HeatmapService {
 
   /// Determina a URL base correta baseada na plataforma
   String get _baseUrl {
-    // Usando backend-java como hostname Docker
-    return 'http://backend-java:8080/api';
+    // Usando backend-java-core como hostname Docker
+    return 'http://backend-java-core:8080/api';
   }
 
   /// Busca ocorrências da API e transforma em zonas
