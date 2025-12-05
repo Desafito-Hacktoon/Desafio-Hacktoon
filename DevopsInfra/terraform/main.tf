@@ -208,6 +208,13 @@ resource "aws_instance" "BluLabs_server" {
     /home/ubuntu/flutter/bin/flutter pub get
     /home/ubuntu/flutter/bin/flutter build web
 
+    # Build do Angular (gera dist/heat-map-app)
+    cd /home/ubuntu/Desafio-Hackathon/Frontend
+    rm -rf node_modules package-lock.json
+    npm install --legacy-peer-deps
+    npm run build -- --configuration production
+
+
     # Build da imagem Docker
     cd /home/ubuntu/Desafio-Hackathon
     docker build -t flutter-web -f DevopsInfra/Dockerfile.flutter .

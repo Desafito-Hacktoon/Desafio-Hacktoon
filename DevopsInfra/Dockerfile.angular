@@ -1,9 +1,9 @@
 # Etapa de build
-FROM node:18 AS builder
+FROM node:20.19-alpine
 WORKDIR /app
 COPY . .
 RUN npm install && npm run build --prod
 
 # Etapa final: Nginx servindo Angular
 FROM nginx:alpine
-COPY --from=builder /app/dist/heatMap-app /usr/share/nginx/html
+COPY --from=builder /app/dist/heatMap-app /usr/share/nginx/htmlgit

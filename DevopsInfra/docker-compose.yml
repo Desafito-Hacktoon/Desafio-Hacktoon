@@ -82,8 +82,8 @@ services:
     
   frontend-angular:
     build:
-      context: ../frontend
-      dockerfile: DevopsInfraDockerfile.angular
+      context: ../Frontend
+      dockerfile: ../DevopsInfra/Dockerfile.angular
     container_name: frontend-angular
     restart: unless-stopped
     ports:
