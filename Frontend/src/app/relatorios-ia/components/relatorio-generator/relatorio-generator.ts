@@ -12,6 +12,7 @@ import { ZardSelectComponent } from '@shared/components/select/select.component'
 import { ZardSelectItemComponent } from '@shared/components/select/select-item.component';
 import { ZardButtonComponent } from '@shared/components/button/button.component';
 import { ZardInputDirective } from '@shared/components/input/input.directive';
+import { ZardIconComponent } from '@shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-relatorio-generator',
@@ -24,7 +25,8 @@ import { ZardInputDirective } from '@shared/components/input/input.directive';
     ZardSelectComponent,
     ZardSelectItemComponent,
     ZardButtonComponent,
-    ZardInputDirective
+    ZardInputDirective,
+    ZardIconComponent
   ],
   templateUrl: './relatorio-generator.html',
   styleUrl: './relatorio-generator.css'

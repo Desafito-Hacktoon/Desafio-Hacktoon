@@ -1,16 +1,33 @@
 <div class="font-sans">
     <div class="mb-6 flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Relatórios IA</h1>
-            <p class="text-sm text-gray-600 mt-1">Relatórios gerados automaticamente por Inteligência Artificial</p>
+        <div class="flex items-center gap-2">
+            <z-icon zType="file-text" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Relatórios</span>
         </div>
-        <button z-button zType="default" zSize="default" (click)="gerarRelatorioCustomizado()"
-            class="!bg-black !text-white hover:!bg-gray-800">
-            + Gerar Relatório
-        </button>
+        <div class="flex items-center gap-3">
+            <z-segmented 
+                [zValue]="periodoSegmentedValue()" 
+                [zOptions]="periodosOptions"
+                (zSelectionChange)="onPeriodoChange($event)"
+                zSize="default">
+            </z-segmented>
+            <z-date-picker
+                [value]="periodoDataSelecionado()"
+                (dateChange)="onDataChange($event)"
+                zMode="range"
+                placeholder="Escolher data"
+                zSize="default"
+                zType="outline"
+                class="!bg-gray-100">
+            </z-date-picker>
+            <button z-button zType="default" zSize="default" (click)="gerarRelatorioCustomizado()"
+                class="!bg-[#135ce4] !text-white hover:!bg-[#0f4bc0] !border-0">
+                + Gerar Relatório
+            </button>
+        </div>
     </div>
 
-    <z-card zTitle="Relatórios">
+    <z-card>
         <div class="space-y-4">
             <div class="p-3 bg-gray-50 rounded-lg border">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
@@ -36,14 +53,17 @@
                         </z-select>
                     </div>
 
-                    <div class="flex items-end h-full gap-2">
-                        <button z-button zSize="sm" (click)="aplicarFiltros()"
-                            class="flex-1 !bg-black !text-white hover:!bg-gray-800 !border-0">
-                            Filtrar
-                        </button>
-                        <button z-button zSize="sm" (click)="limparFiltros()" class="flex-1">
-                            Limpar
-                        </button>
+                    <div class="space-y-1">
+                        <label class="text-sm font-medium text-gray-600 invisible">Limpar</label>
+                        <div class="flex items-end gap-2">
+                            <button z-button zSize="default" (click)="aplicarFiltros()"
+                                class="flex-1 h-9 !bg-[#135ce4] !text-white hover:!bg-[#0f4bc0] !border-0">
+                                Filtrar
+                            </button>
+                            <button z-button zSize="default" (click)="limparFiltros()" class="flex-1 h-9">
+                                Limpar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -115,9 +135,11 @@
                                     {{ relatorio.status }}
                                 </span>
                             </td>
-                            <td z-table-cell
-                                class="px-4 py-3 text-sm text-gray-500 whitespace-nowrap border-b border-gray-200">
-                                {{ relatorio.dataGeracao | date:'dd/MM/yyyy HH:mm' }}
+                            <td z-table-cell class="px-4 py-3 text-sm text-gray-500 border-b border-gray-200">
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-gray-900">{{ relatorio.dataGeracao | date:'dd/MM/yyyy' }}</span>
+                                    <span class="text-xs text-gray-900">{{ relatorio.dataGeracao | date:'HH:mm' }}</span>
+                                </div>
                             </td>
                             <td z-table-cell
                                 class="px-4 py-3 text-sm text-gray-500 text-center border-b border-gray-200">

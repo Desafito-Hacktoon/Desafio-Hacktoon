@@ -11,11 +11,12 @@ import {
 } from '../../../models/relatorio-ia.models';
 import { ZardCardComponent } from '@shared/components/card/card.component';
 import { ZardButtonComponent } from '@shared/components/button/button.component';
+import { ZardIconComponent } from '@shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-relatorio-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, DatePipe, ZardCardComponent, ZardButtonComponent],
+  imports: [CommonModule, RouterModule, DatePipe, ZardCardComponent, ZardButtonComponent, ZardIconComponent],
   templateUrl: './relatorio-detail.html',
   styleUrl: './relatorio-detail.css'
 })
