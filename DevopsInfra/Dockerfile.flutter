@@ -1,7 +1,20 @@
+# Etapa de build do Flutter Web
+FROM ubuntu:20.04 AS builder
 
+RUN apt-get update && \
+    apt-get install -y curl unzip xz-utils git libgl1-mesa zip && \
+    git clone https://github.com/flutter/flutter.git -b stable /flutter && \
+    export PATH="/flutter/bin:$PATH" && \
+    /flutter/bin/flutter doctor
+
+# Copia o projeto Flutter
+WORKDIR /app
+COPY App-Flutter/ /app
+
+RUN export PATH="/flutter/bin:$PATH" && \
+    /flutter/bin/flutter pub get && \
+    /flutter/bin/flutter build web
+
+# Etapa final: Nginx servindo os arquivos
 FROM nginx:alpine
-
 COPY --from=builder /app/build/web /usr/share/nginx/html
-
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]

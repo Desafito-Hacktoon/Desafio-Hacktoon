@@ -70,20 +70,6 @@ services:
     env_file:
       - .env
 
-  backend-csharp-geo:
-    build:
-      context: ../geo-engine
-      dockerfile: ./Dockerfile.csharp
-    container_name: backend-csharp-geo
-    restart: unless-stopped
-    environment:
-      DB_CONNECTION: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-    ports:
-      - "5000:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-
   flutter-web:
     build:
       context: ../App-Flutter
@@ -101,11 +87,10 @@ services:
       - "4200:80"
     environment:
       API_JAVA_BASE_URL: http://backend-java-core:8080
-      API_CSHARP_BASE_URL: http://backend-csharp-geo:8080
+      
     depends_on:
       - backend-java-core
-      - backend-csharp-geo
-
+     
 volumes:
   pg_data:
   pgadmin_data:
