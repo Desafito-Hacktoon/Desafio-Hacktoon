@@ -11,17 +11,21 @@ import com.moredevs.mapblu.core.service.ai.PromptBuilder;
 import com.moredevs.mapblu.core.service.ai.ResponseParser;
 import com.moredevs.mapblu.infraestructure.integration.OpenRouterAIService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -137,10 +141,44 @@ public class RelatorioIAService {
             LocalDateTime dataFim,
             Pageable pageable) {
 
-        Page<RelatorioIA> relatorios = relatorioIARepository.findByFilters(
-                tipoRelatorio, status, dataInicio, dataFim, pageable);
+        Specification<RelatorioIA> spec = buildSpecification(tipoRelatorio, status, dataInicio, dataFim);
+        Page<RelatorioIA> relatorios = relatorioIARepository.findAll(spec, pageable);
 
         return relatorios.map(this::converterParaResponse);
+    }
+
+    /**
+     * Constrói uma Specification dinâmica baseada nos filtros fornecidos.
+     */
+    private Specification<RelatorioIA> buildSpecification(
+            RelatorioIA.TipoRelatorio tipoRelatorio,
+            RelatorioIA.StatusRelatorio status,
+            LocalDateTime dataInicio,
+            LocalDateTime dataFim) {
+        
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (tipoRelatorio != null) {
+                predicates.add(cb.equal(root.get("tipoRelatorio"), tipoRelatorio));
+            }
+
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+
+            if (dataInicio != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("periodoInicio"), dataInicio));
+            }
+
+            if (dataFim != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("periodoFim"), dataFim));
+            }
+
+            query.orderBy(cb.desc(root.get("dataGeracao")));
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
     }
 
     /**
