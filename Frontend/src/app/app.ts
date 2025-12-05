@@ -11,6 +11,7 @@ import { ZardIconComponent } from './shared/components/icon/icon.component';
 import { ZardButtonComponent } from './shared/components/button/button.component';
 import { UserMenuComponent } from './shared/components/user-menu/user-menu.component';
 import {AuthService} from "./auth/service/auth";
+import { type ZardIcon } from './shared/components/icon/icons';
 
 
 @Component({
@@ -37,6 +38,7 @@ import {AuthService} from "./auth/service/auth";
 export class App {
   protected readonly title = signal('heatMap-app');
   currentPageTitle = signal('Dashboard');
+  currentPageIcon = signal<ZardIcon>('layout-dashboard');
 
   private pageTitles: { [key: string]: string } = {
     '/dashboard': 'Dashboard',
@@ -48,6 +50,40 @@ export class App {
     '/insights-ia/gerar': 'Gerar Insight'
   };
 
+  private pageIcons: { [key: string]: ZardIcon } = {
+    '/dashboard': 'layout-dashboard',
+    '/mapa': 'layers',
+    '/ocorrencias': 'file-text',
+    '/relatorios-ia': 'clipboard',
+    '/relatorios-ia/gerar': 'file-text',
+    '/insights-ia': 'lightbulb',
+    '/insights-ia/gerar': 'lightbulb'
+  };
+
+  getPageIcon(url: string): ZardIcon {
+    const urlWithoutQuery = url.split('?')[0];
+    // Para rotas com parâmetros dinâmicos (ex: /ocorrencias/:id), verifica se começa com o prefixo
+    if (urlWithoutQuery.startsWith('/ocorrencias/') && urlWithoutQuery !== '/ocorrencias') {
+      return 'file-text';
+    }
+    if (urlWithoutQuery.startsWith('/relatorios-ia/') && urlWithoutQuery !== '/relatorios-ia' && urlWithoutQuery !== '/relatorios-ia/gerar') {
+      return 'clipboard';
+    }
+    return this.pageIcons[urlWithoutQuery] || 'layout-dashboard';
+  }
+
+  getPageTitle(url: string): string {
+    const urlWithoutQuery = url.split('?')[0];
+    // Para rotas com parâmetros dinâmicos (ex: /ocorrencias/:id), verifica se começa com o prefixo
+    if (urlWithoutQuery.startsWith('/ocorrencias/') && urlWithoutQuery !== '/ocorrencias') {
+      return 'Detalhes da Ocorrência';
+    }
+    if (urlWithoutQuery.startsWith('/relatorios-ia/') && urlWithoutQuery !== '/relatorios-ia' && urlWithoutQuery !== '/relatorios-ia/gerar') {
+      return 'Detalhes do Relatório';
+    }
+    return this.pageTitles[urlWithoutQuery] || 'Dashboard';
+  }
+
   constructor(
     public router: Router,
     public auth: AuthService
@@ -56,12 +92,12 @@ export class App {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
         const url = event.urlAfterRedirects || event.url;
-        const urlWithoutQuery = url.split('?')[0];
-        this.currentPageTitle.set(this.pageTitles[urlWithoutQuery] || 'Dashboard');
+        this.currentPageTitle.set(this.getPageTitle(url));
+        this.currentPageIcon.set(this.getPageIcon(url));
       });
 
     const currentUrl = this.router.url;
-    const urlWithoutQuery = currentUrl.split('?')[0];
-    this.currentPageTitle.set(this.pageTitles[urlWithoutQuery] || 'Dashboard');
+    this.currentPageTitle.set(this.getPageTitle(currentUrl));
+    this.currentPageIcon.set(this.getPageIcon(currentUrl));
   }
 }

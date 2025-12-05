@@ -88,18 +88,17 @@
   <div class="flex flex-col flex-1 min-w-0 overflow-hidden gap-[1px]">
     <z-header [zHeight]="60" class="!bg-white custom-header rounded-bl-lg">
       <div class="flex items-center justify-between px-4 w-full h-full">
-        <div class="flex items-center gap-3 h-full">
+        <div class="flex items-center gap-2 h-full">
+          <z-icon [zType]="currentPageIcon()" class="text-gray-600"></z-icon>
           <h1 class="text-lg font-semibold text-slate-900 m-0">
             {{ currentPageTitle() }}
           </h1>
         </div>
 
         <div class="flex items-center gap-4">
-          <button class="p-2 rounded-lg hover:bg-gray-200 transition-colors">
-            <z-icon zType="bell" class="text-gray-600"></z-icon>
-          </button>
-          <button class="p-2 rounded-lg hover:bg-gray-200 transition-colors">
-            <z-icon zType="clock" class="text-gray-600"></z-icon>
+          <button class="relative p-2 rounded-lg hover:bg-gray-200 transition-colors">
+            <z-icon zType="bell" zSize="xl" class="text-gray-600 !w-4 !h-4"></z-icon>
+            <span class="absolute top-1 right-1 w-2 h-2 bg-[#135ce4] rounded-full"></span>
           </button>
         </div>
       </div>

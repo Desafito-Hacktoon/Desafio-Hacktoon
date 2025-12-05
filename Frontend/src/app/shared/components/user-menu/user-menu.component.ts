@@ -22,7 +22,7 @@ import { ZardPopoverComponent, ZardPopoverDirective } from '../popover/popover.c
         zPlacement="top"
         class="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-        <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-semibold flex-shrink-0">
+        <div class="w-10 h-10 rounded-full bg-[#135ce4]/10 text-[#135ce4] flex items-center justify-center text-sm font-semibold flex-shrink-0">
           {{ userInitials() }}
         </div>
         <div class="flex flex-col items-start flex-1 min-w-0">
