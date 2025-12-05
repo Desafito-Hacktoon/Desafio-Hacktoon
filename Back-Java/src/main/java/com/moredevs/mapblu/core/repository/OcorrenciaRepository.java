@@ -285,5 +285,113 @@ public interface OcorrenciaRepository extends JpaRepository<Ocorrencia, UUID> {
         @Param("inicio") java.time.LocalDateTime inicio,
         @Param("fim") java.time.LocalDateTime fim
     );
+
+    /**
+     * Agrupa ocorrências em grid dinâmico usando PostGIS.
+     * Retorna células do grid com contagem e gravidade média.
+     * 
+     * @param minLat latitude mínima da bounding box
+     * @param maxLat latitude máxima da bounding box
+     * @param minLng longitude mínima da bounding box
+     * @param maxLng longitude máxima da bounding box
+     * @param gridSize tamanho do grid em metros (convertido para Web Mercator)
+     * @param tipoProblema filtro por tipo (opcional)
+     * @param dataInicio data de início do período (opcional)
+     * @param dataFim data de fim do período (opcional)
+     * @return lista de arrays [center_lng, center_lat, count, avg_gravidade, max_gravidade]
+     */
+    @Query(value = "SELECT " +
+           "ST_X(ST_Centroid(ST_Collect(o.coordenadas))) as center_lng, " +
+           "ST_Y(ST_Centroid(ST_Collect(o.coordenadas))) as center_lat, " +
+           "COUNT(o.id) as count, " +
+           "AVG(o.gravidade) as avg_gravidade, " +
+           "MAX(o.gravidade) as max_gravidade " +
+           "FROM ocorrencias o " +
+           "WHERE ST_Within(o.coordenadas, ST_MakeEnvelope(:minLng, :minLat, :maxLng, :maxLat, 4326)) " +
+           "AND (CAST(:tipoProblema AS VARCHAR) IS NULL OR o.tipo_problema = CAST(:tipoProblema AS VARCHAR)) " +
+           "AND (CAST(:dataInicio AS TIMESTAMP) IS NULL OR o.data_criacao >= CAST(:dataInicio AS TIMESTAMP)) " +
+           "AND (CAST(:dataFim AS TIMESTAMP) IS NULL OR o.data_criacao <= CAST(:dataFim AS TIMESTAMP)) " +
+           "GROUP BY ST_SnapToGrid(ST_Transform(o.coordenadas, 3857), :gridSize) " +
+           "HAVING COUNT(o.id) > 0 " +
+           "ORDER BY count DESC",
+           nativeQuery = true)
+    List<Object[]> aggregateByGrid(
+        @Param("minLat") double minLat,
+        @Param("maxLat") double maxLat,
+        @Param("minLng") double minLng,
+        @Param("maxLng") double maxLng,
+        @Param("gridSize") double gridSize,
+        @Param("tipoProblema") String tipoProblema,
+        @Param("dataInicio") java.time.LocalDateTime dataInicio,
+        @Param("dataFim") java.time.LocalDateTime dataFim
+    );
+
+    /**
+     * Agrupa ocorrências em hexágonos usando PostGIS.
+     * Retorna pontos hexagonais com contagem e intensidade.
+     * 
+     * @param minLat latitude mínima da bounding box
+     * @param maxLat latitude máxima da bounding box
+     * @param minLng longitude mínima da bounding box
+     * @param maxLng longitude máxima da bounding box
+     * @param hexSize tamanho do hexágono em graus decimais
+     * @param tipoProblema filtro por tipo (opcional)
+     * @param dataInicio data de início do período (opcional)
+     * @param dataFim data de fim do período (opcional)
+     * @return lista de arrays [lng, lat, count, avg_gravidade]
+     */
+    @Query(value = "SELECT " +
+           "ST_X(ST_Centroid(ST_Collect(o.coordenadas))) as lng, " +
+           "ST_Y(ST_Centroid(ST_Collect(o.coordenadas))) as lat, " +
+           "COUNT(o.id) as count, " +
+           "AVG(o.gravidade) as avg_gravidade " +
+           "FROM ocorrencias o " +
+           "WHERE ST_Within(o.coordenadas, ST_MakeEnvelope(:minLng, :minLat, :maxLng, :maxLat, 4326)) " +
+           "AND (CAST(:tipoProblema AS VARCHAR) IS NULL OR o.tipo_problema = CAST(:tipoProblema AS VARCHAR)) " +
+           "AND (CAST(:dataInicio AS TIMESTAMP) IS NULL OR o.data_criacao >= CAST(:dataInicio AS TIMESTAMP)) " +
+           "AND (CAST(:dataFim AS TIMESTAMP) IS NULL OR o.data_criacao <= CAST(:dataFim AS TIMESTAMP)) " +
+           "GROUP BY ST_SnapToGrid(ST_Transform(o.coordenadas, 3857), :hexSize) " +
+           "HAVING COUNT(o.id) > 0 " +
+           "ORDER BY count DESC",
+           nativeQuery = true)
+    List<Object[]> aggregateByHexagon(
+        @Param("minLat") double minLat,
+        @Param("maxLat") double maxLat,
+        @Param("minLng") double minLng,
+        @Param("maxLng") double maxLng,
+        @Param("hexSize") double hexSize,
+        @Param("tipoProblema") String tipoProblema,
+        @Param("dataInicio") java.time.LocalDateTime dataInicio,
+        @Param("dataFim") java.time.LocalDateTime dataFim
+    );
+
+    /**
+     * Busca ocorrências dentro de uma bounding box.
+     * 
+     * @param minLat latitude mínima
+     * @param maxLat latitude máxima
+     * @param minLng longitude mínima
+     * @param maxLng longitude máxima
+     * @param tipoProblema filtro por tipo (opcional)
+     * @param dataInicio data de início do período (opcional)
+     * @param dataFim data de fim do período (opcional)
+     * @return lista de ocorrências dentro da bounding box
+     */
+    @Query(value = "SELECT * FROM ocorrencias o WHERE " +
+           "ST_Within(o.coordenadas, ST_MakeEnvelope(:minLng, :minLat, :maxLng, :maxLat, 4326)) = true " +
+           "AND (CAST(:tipoProblema AS VARCHAR) IS NULL OR o.tipo_problema = CAST(:tipoProblema AS VARCHAR)) " +
+           "AND (CAST(:dataInicio AS TIMESTAMP) IS NULL OR o.data_criacao >= CAST(:dataInicio AS TIMESTAMP)) " +
+           "AND (CAST(:dataFim AS TIMESTAMP) IS NULL OR o.data_criacao <= CAST(:dataFim AS TIMESTAMP)) " +
+           "ORDER BY o.gravidade DESC, o.data_criacao DESC",
+           nativeQuery = true)
+    List<Ocorrencia> findWithinBoundingBox(
+        @Param("minLat") double minLat,
+        @Param("maxLat") double maxLat,
+        @Param("minLng") double minLng,
+        @Param("maxLng") double maxLng,
+        @Param("tipoProblema") String tipoProblema,
+        @Param("dataInicio") java.time.LocalDateTime dataInicio,
+        @Param("dataFim") java.time.LocalDateTime dataFim
+    );
 }
 
