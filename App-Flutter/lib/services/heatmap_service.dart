@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
@@ -12,16 +11,8 @@ class HeatmapService {
 
   /// Determina a URL base correta baseada na plataforma
   String get _baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:8080/api';
-    }
-    if (Platform.isAndroid) {
-      return ApiConfig.baseUrl; // 10.0.2.2 para emulador Android
-    }
-    if (Platform.isIOS) {
-      return ApiConfig.baseUrlIOS;
-    }
-    return ApiConfig.baseUrl;
+    // Usando backend-java como hostname Docker
+    return 'http://backend-java:8080/api';
   }
 
   /// Busca ocorrências da API e transforma em zonas
