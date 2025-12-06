@@ -1,25 +1,35 @@
 version: "3.9"
 
+# O arquivo .env está na raiz do projeto
+# Para executar o docker-compose:
+# Opção 1 (recomendado): Execute da raiz do projeto:
+#   cd /caminho/para/Desafio-Hackathon
+#   docker-compose -f DevopsInfra/docker-compose.yml --env-file .env up -d
+# Opção 2: Execute de dentro de DevopsInfra:
+#   cd DevopsInfra
+#   docker-compose --env-file ../.env up -d
+
 services:
   postgres:
-    image: postgis/postgis:15-3.3
+    # Usando Dockerfile customizado com PostgreSQL 16 + PostGIS
+    # A imagem oficial postgres:16 tem suporte multi-arch incluindo ARM64 nativo
+    # Isso evita emulação e reduz consumo de recursos no Apple Silicon
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
     container_name: postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./infra/db/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}",
-        ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -51,9 +61,9 @@ services:
 
   backend-java-core:
     build:
-      context: ../java-core
-      dockerfile: ./Dockerfile.java
-    container_name: backend-java-core
+      context: /home/ubuntu/Desafio-Hackathon/Back-Java
+      dockerfile: ../DevopsInfra/Dockerfile.java
+    container_name: backend-java
     restart: unless-stopped
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
@@ -61,44 +71,39 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
-      XAI_API_KEY: ${XAI_API_KEY}
     ports:
       - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - .env
 
-  backend-csharp-geo:
+ 
+  frontend-flutter:
     build:
-      context: ../geo-engine
-      dockerfile: ./Dockerfile.csharp
-    container_name: backend-csharp-geo
-    restart: unless-stopped
-    environment:
-      DB_CONNECTION: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      context: ../ 
+      dockerfile: DevopsInfra/Dockerfile.flutter
     ports:
-      - "5000:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - "4200:80"
+    restart: unless-stopped
 
+    
   frontend-angular:
     build:
-      context: ../web-angular
-      dockerfile: ./Dockerfile.angular
+      context: ../Frontend
+      dockerfile: ../DevopsInfra/Dockerfile.angular
     container_name: frontend-angular
     restart: unless-stopped
     ports:
       - "4200:80"
     environment:
       API_JAVA_BASE_URL: http://backend-java-core:8080
-      API_CSHARP_BASE_URL: http://backend-csharp-geo:8080
+      
     depends_on:
       - backend-java-core
-      - backend-csharp-geo
-
+     
 volumes:
   pg_data:
   pgadmin_data:
   redis_data:
-

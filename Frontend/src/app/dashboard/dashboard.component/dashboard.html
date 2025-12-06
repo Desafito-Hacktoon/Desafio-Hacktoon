@@ -1,0 +1,354 @@
+<div class="font-sans">
+  <div class="mb-6 flex items-center justify-between">
+    @if (isLoadingStats()) {
+    <div class="text-sm text-gray-500">Carregando...</div>
+    } @else {
+    <div></div>
+    }
+    <div class="flex items-center gap-3">
+      <z-segmented 
+        [zValue]="periodoSegmentedValue()" 
+        [zOptions]="periodosOptions"
+        (zSelectionChange)="onPeriodoChange($event)"
+        zSize="default">
+      </z-segmented>
+      <z-date-picker
+        [value]="periodoDataSelecionado()"
+        (dateChange)="onDataChange($event)"
+        placeholder="Escolher data"
+        zSize="default"
+        zType="outline"
+        zMode="range">
+      </z-date-picker>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+    <ng-template #totalOcorrenciasTitle>
+      <div class="flex items-center gap-2">
+        <z-icon zType="file-text" zSize="default" class="text-gray-600"></z-icon>
+        <span class="font-medium">Total de Ocorrências</span>
+      </div>
+    </ng-template>
+    <z-card [zTitle]="totalOcorrenciasTitle" class="!p-4">
+      <div class="space-y-1">
+        <div class="text-xl font-semibold text-gray-900">{{ totalOcorrencias() }}</div>
+        @if (variacaoTotalOcorrencias() !== null) {
+          <div class="flex items-center gap-1.5 pt-1.5 border-t border-gray-100">
+            @if (variacaoTotalOcorrencias() !== 0) {
+              <div class="flex items-center gap-1" [ngClass]="variacaoTotalOcorrencias()! > 0 ? 'text-red-600' : 'text-green-600'">
+                <z-icon [zType]="variacaoTotalOcorrencias()! > 0 ? 'arrow-up' : 'arrow-down'" zSize="sm"></z-icon>
+                <span class="text-sm font-medium">{{ Math.abs(variacaoTotalOcorrencias()!) }}%</span>
+              </div>
+              <span class="text-xs text-gray-500">
+                {{ variacaoTotalOcorrencias()! > 0 ? 'a mais' : 'a menos' }} que o período anterior
+              </span>
+            } @else {
+              <div class="flex items-center gap-1 text-gray-600">
+                <span class="text-sm font-medium">0%</span>
+              </div>
+              <span class="text-xs text-gray-500">
+                sem variação em relação ao período anterior
+              </span>
+            }
+          </div>
+        }
+      </div>
+    </z-card>
+
+    <ng-template #ocorrenciasCriticasTitle>
+      <div class="flex items-center gap-2">
+        <z-icon zType="circle-alert" zSize="default" class="text-gray-600"></z-icon>
+        <span class="font-medium">Ocorrências Críticas</span>
+      </div>
+    </ng-template>
+    <z-card [zTitle]="ocorrenciasCriticasTitle" class="!p-4">
+      <div class="space-y-1">
+        <div class="text-xl font-semibold text-gray-900">{{ ocorrenciasCriticas() }}</div>
+        @if (variacaoOcorrenciasCriticas() !== null) {
+          <div class="flex items-center gap-1.5 pt-1.5 border-t border-gray-100">
+            @if (variacaoOcorrenciasCriticas() !== 0) {
+              <div class="flex items-center gap-1" [ngClass]="variacaoOcorrenciasCriticas()! > 0 ? 'text-red-600' : 'text-green-600'">
+                <z-icon [zType]="variacaoOcorrenciasCriticas()! > 0 ? 'arrow-up' : 'arrow-down'" zSize="sm"></z-icon>
+                <span class="text-sm font-medium">{{ Math.abs(variacaoOcorrenciasCriticas()!) }}%</span>
+              </div>
+              <span class="text-xs text-gray-500">
+                {{ variacaoOcorrenciasCriticas()! > 0 ? 'a mais' : 'a menos' }} que o período anterior
+              </span>
+            } @else {
+              <div class="flex items-center gap-1 text-gray-600">
+                <span class="text-sm font-medium">0%</span>
+              </div>
+              <span class="text-xs text-gray-500">
+                sem variação em relação ao período anterior
+              </span>
+            }
+          </div>
+        }
+      </div>
+    </z-card>
+
+    <ng-template #ocorrenciasEmAndamentoTitle>
+      <div class="flex items-center gap-2">
+        <z-icon zType="clock" zSize="default" class="text-gray-600"></z-icon>
+        <span class="font-medium">Ocorrências em Andamento</span>
+      </div>
+    </ng-template>
+    <z-card [zTitle]="ocorrenciasEmAndamentoTitle" class="!p-4">
+      <div class="space-y-1">
+        <div class="text-xl font-semibold text-gray-900">{{ ocorrenciasEmAndamento() }}</div>
+        @if (variacaoOcorrenciasEmAndamento() !== null) {
+          <div class="flex items-center gap-1.5 pt-1.5 border-t border-gray-100">
+            @if (variacaoOcorrenciasEmAndamento() !== 0) {
+              <div class="flex items-center gap-1" [ngClass]="variacaoOcorrenciasEmAndamento()! > 0 ? 'text-green-600' : 'text-red-600'">
+                <z-icon [zType]="variacaoOcorrenciasEmAndamento()! > 0 ? 'arrow-up' : 'arrow-down'" zSize="sm"></z-icon>
+                <span class="text-sm font-medium">{{ Math.abs(variacaoOcorrenciasEmAndamento()!) }}%</span>
+              </div>
+              <span class="text-xs text-gray-500">
+                {{ variacaoOcorrenciasEmAndamento()! > 0 ? 'a mais' : 'a menos' }} que o período anterior
+              </span>
+            } @else {
+              <div class="flex items-center gap-1 text-gray-600">
+                <span class="text-sm font-medium">0%</span>
+              </div>
+              <span class="text-xs text-gray-500">
+                sem variação em relação ao período anterior
+              </span>
+            }
+          </div>
+        }
+      </div>
+    </z-card>
+  </div>
+
+  <ng-template #ocorrenciasPorPeriodoTitle>
+    <div class="flex items-center gap-2">
+      <z-icon zType="layers-2" zSize="default" class="text-gray-600"></z-icon>
+      <span class="font-medium">Ocorrências por Período</span>
+    </div>
+  </ng-template>
+  <z-card [zTitle]="ocorrenciasPorPeriodoTitle" class="mb-6">
+    <div class="mb-4 p-3 bg-gray-50 rounded-lg border">
+      <p class="text-sm text-gray-600">
+        O gráfico abaixo mostra as ocorrências do período selecionado no filtro acima: <strong>{{
+          periodoSelecionadoLabel() }}</strong>
+      </p>
+    </div>
+
+    @if (lineChartData) {
+    <z-line-chart [chartData]="lineChartData" [chartOptions]="lineChartOptions" />
+    } @else {
+    <div class="h-[400px] flex items-center justify-center text-gray-500">
+      Carregando gráfico...
+    </div>
+    }
+  </z-card>
+
+  <ng-template #ocorrenciasDoPeriodoTitle>
+    <div class="flex items-center gap-2">
+      <z-icon zType="calendar" zSize="default" class="text-gray-600"></z-icon>
+      <span class="font-medium">Ocorrências do Período</span>
+    </div>
+  </ng-template>
+  <z-card [zTitle]="ocorrenciasDoPeriodoTitle">
+    <div class="space-y-4">
+      <div class="p-3 bg-gray-50 rounded-lg border">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Buscar</label>
+            <input z-input zSize="sm" type="text" placeholder="Buscar..." [value]="filtroBusca()"
+              (input)="filtroBusca.set($any($event.target).value); aplicarFiltros()" class="w-full" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Status</label>
+            <z-select [zValue]="filtroStatus()" zSize="default" zPlaceholder="Todos"
+              (zSelectionChange)="onStatusChange($event)" class="text-sm">
+              <z-select-item [zValue]="''">Todos</z-select-item>
+              @for (status of statusOptions; track status) {
+              <z-select-item [zValue]="status">{{ status }}</z-select-item>
+              }
+            </z-select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Bairro</label>
+            <z-select [zValue]="filtroBairro()" zSize="default" zPlaceholder="Todos"
+              (zSelectionChange)="onBairroChange($event)" class="text-sm">
+              <z-select-item [zValue]="''">Todos</z-select-item>
+              @for (bairro of bairrosOptions(); track bairro) {
+              <z-select-item [zValue]="bairro">{{ bairro }}</z-select-item>
+              }
+            </z-select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600">Tipo</label>
+            <z-select [zValue]="filtroTipo()" zSize="default" zPlaceholder="Todos"
+              (zSelectionChange)="onTipoChange($event)" class="text-sm">
+              <z-select-item [zValue]="''">Todos</z-select-item>
+              @for (tipo of tiposOptions(); track tipo) {
+              <z-select-item [zValue]="tipo">{{ formatarTipoProblema(tipo) }}</z-select-item>
+              }
+            </z-select>
+          </div>
+
+          <div class="space-y-1">
+            <label class="text-sm font-medium text-gray-600 opacity-0 pointer-events-none">Limpar</label>
+            <button z-button zSize="default" (click)="limparFiltros()"
+              class="!bg-[#135ce4] !text-white hover:!bg-[#0f4bc0] !border-0 w-full h-9">
+              Limpar
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table z-table class="w-full text-sm border-separate border-spacing-0">
+          <thead z-table-header>
+            <tr z-table-row>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Data</th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Tipo</th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Descrição
+              </th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Bairro
+              </th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-center">
+                Gravidade</th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-center">
+                Status
+              </th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Secretaria</th>
+              <th z-table-head
+                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                Atualização</th>
+            </tr>
+          </thead>
+          <tbody z-table-body>
+            @for (ocorrencia of paginatedOcorrencias(); track ocorrencia.id) {
+            <tr z-table-row class="cursor-pointer hover:bg-gray-50 border-b border-gray-200"
+              (click)="navigateToDetail(ocorrencia.id)">
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
+                <div class="flex flex-col">
+                  <span class="text-xs text-gray-900">{{ ocorrencia.dataCriacao | date:'dd/MM/yyyy' }}</span>
+                  <span class="text-xs text-gray-900">{{ ocorrencia.dataCriacao | date:'HH:mm' }}</span>
+                </div>
+              </td>
+              <td z-table-cell class="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-200">
+                {{ formatarTipoProblema(ocorrencia.tipoProblema) }}
+              </td>
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-700 max-w-xs truncate border-b border-gray-200">
+                {{ ocorrencia.descricao }}
+              </td>
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
+                {{ ocorrencia.bairro }}
+              </td>
+              <td z-table-cell class="px-4 py-3 text-center border-b border-gray-200">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full" [class]="ocorrencia.gravidade >= 8 ? 'bg-red-100 text-red-800' : 
+                                   ocorrencia.gravidade >= 4 ? 'bg-yellow-100 text-yellow-800' : 
+                                   'bg-green-100 text-green-800'">
+                  {{ ocorrencia.gravidade }}
+                </span>
+              </td>
+              <td z-table-cell class="px-4 py-3 text-center border-b border-gray-200">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-md" [ngClass]="getStatusBadgeClass(ocorrencia.status)">
+                  <z-icon [zType]="getStatusIcon(ocorrencia.status)" zSize="sm" class="!w-3 !h-3"></z-icon>
+                  {{ ocorrencia.status }}
+                </span>
+              </td>
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-600 border-b border-gray-200">
+                {{ ocorrencia.secretariaOrigem }}
+              </td>
+              <td z-table-cell class="px-4 py-3 text-sm text-gray-500 border-b border-gray-200">
+                <div class="flex flex-col">
+                  <span class="text-xs text-gray-900">{{ ocorrencia.dataAtualizacao | date:'dd/MM/yyyy' }}</span>
+                  <span class="text-xs text-gray-900">{{ ocorrencia.dataAtualizacao | date:'HH:mm' }}</span>
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr z-table-row>
+              <td z-table-cell [attr.colspan]="8" class="text-center py-8 text-gray-500 text-sm">
+                Nenhuma ocorrência encontrada no período selecionado
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalPages() > 0) {
+      <div class="flex items-center justify-between border-t border-gray-200 pt-4">
+        <div class="flex items-center gap-4">
+          <div class="text-sm text-gray-700">
+            Mostrando <span class="font-medium">{{ paginationInfo().start }}</span> até
+            <span class="font-medium">{{ paginationInfo().end }}</span> de
+            <span class="font-medium">{{ paginationInfo().total }}</span> ocorrências
+            @if (paginationInfo().totalPages > 1) {
+            <span class="text-gray-500"> (Página {{ paginationInfo().currentPage }} de {{
+              paginationInfo().totalPages }})</span>
+            }
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-600">Itens por página:</label>
+            <z-select [zValue]="itemsPerPage().toString()" zSize="default" zPlaceholder="Selecione"
+              (zSelectionChange)="onItemsPerPageChange($event)" class="text-sm w-20">
+              @for (option of itemsPerPageOptions; track option) {
+              <z-select-item [zValue]="option.toString()">{{ option }}</z-select-item>
+              }
+            </z-select>
+          </div>
+        </div>
+
+        <div>
+          <z-pagination [zPageIndex]="currentPage()" [zTotal]="totalPages()"
+            (zPageIndexChange)="onPageChange($event)" />
+        </div>
+      </div>
+      }
+    </div>
+  </z-card>
+  <div class="grid grid-cols-3 gap-5 mt-6">
+    <ng-template #tiposOcorrenciasTitle>
+      <div class="flex items-center gap-2">
+        <z-icon zType="tag" zSize="default" class="text-gray-600"></z-icon>
+        <span class="font-medium">Tipos de Ocorrências</span>
+      </div>
+    </ng-template>
+    <z-card [zTitle]="tiposOcorrenciasTitle">
+      <z-pie-chart [chartData]="pieData" [chartOptions]="pieOptions" />
+    </z-card>
+    
+    <ng-template #bairrosTitle>
+      <div class="flex items-center gap-2">
+        <z-icon zType="layers" zSize="default" class="text-gray-600"></z-icon>
+        <span class="font-medium">Bairros</span>
+      </div>
+    </ng-template>
+    <z-card [zTitle]="bairrosTitle">
+      <z-pie-chart [chartData]="pieData2" [chartOptions]="pieOptions2" />
+    </z-card>
+    
+    <ng-template #statusTitle>
+      <div class="flex items-center gap-2">
+        <z-icon zType="badge-check" zSize="default" class="text-gray-600"></z-icon>
+        <span class="font-medium">Status</span>
+      </div>
+    </ng-template>
+    <z-card [zTitle]="statusTitle">
+      <z-pie-chart [chartData]="pieData3" [chartOptions]="pieOptions3" />
+    </z-card>
+  </div>
+</div>

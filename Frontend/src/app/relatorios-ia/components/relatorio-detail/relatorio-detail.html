@@ -1,0 +1,298 @@
+<div class="font-sans">
+    @if (loading()) {
+    <div class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p class="mt-4 text-gray-600">Carregando relatório...</p>
+    </div>
+    }
+
+    @if (error() && !loading()) {
+    <ng-template #erroTitle>
+        <div class="flex items-center gap-2">
+            <z-icon zType="circle-alert" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Erro</span>
+        </div>
+    </ng-template>
+    <z-card [zTitle]="erroTitle" class="mb-6 !p-4">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p class="text-sm text-red-800 mb-4">{{ error() }}</p>
+            <button z-button zType="default" zSize="default" (click)="voltar()"
+                class="!bg-[#135ce4] !text-white hover:!bg-[#0f4bc0] !border-0">
+                Voltar
+            </button>
+        </div>
+    </z-card>
+    }
+
+    @if (relatorio(); as rel) {
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-semibold text-gray-900">{{ rel.titulo }}</h1>
+            <div class="flex items-center gap-3 mt-2">
+                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full"
+                    [class]="getStatusBadgeClass(rel.status)">
+                    {{ rel.status }}
+                </span>
+                <span
+                    class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                    {{ getTipoRelatorioLabel(rel.tipoRelatorio) }}
+                </span>
+                @if (rel.modeloIAUsado) {
+                <span
+                    class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
+                    {{ rel.modeloIAUsado }}
+                </span>
+                }
+            </div>
+        </div>
+        <button z-button zType="default" zSize="default" (click)="voltar()" class="!bg-gray-100 hover:!bg-gray-200">
+            ← Voltar
+        </button>
+    </div>
+
+    <ng-template #informacoesTitle>
+        <div class="flex items-center gap-2">
+            <z-icon zType="info" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Informações do Relatório</span>
+        </div>
+    </ng-template>
+    <z-card [zTitle]="informacoesTitle" class="mb-6 !p-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Período Início</p>
+                <p class="text-sm font-medium text-gray-900">{{ rel.periodoInicio | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Período Fim</p>
+                <p class="text-sm font-medium text-gray-900">{{ rel.periodoFim | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Data de Geração</p>
+                <p class="text-sm font-medium text-gray-900">{{ rel.dataGeracao | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+            @if (rel.tempoProcessamentoMs) {
+            <div>
+                <p class="text-xs text-gray-500 mb-1">Tempo de Processamento</p>
+                <p class="text-sm font-medium text-gray-900">{{ (rel.tempoProcessamentoMs / 1000).toFixed(1) }}s</p>
+            </div>
+            }
+        </div>
+    </z-card>
+
+    @if (rel.metricasCalculadas; as metricas) {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        <ng-template #totalOcorrenciasTitle>
+            <div class="flex items-center gap-2">
+                <z-icon zType="file-text" zSize="default" class="text-gray-600"></z-icon>
+                <span class="font-medium">Total de Ocorrências</span>
+            </div>
+        </ng-template>
+        <z-card [zTitle]="totalOcorrenciasTitle" class="!p-4">
+            <div class="space-y-1">
+                <div class="text-xl font-semibold text-gray-900">{{ metricas.totalOcorrencias }}</div>
+            </div>
+        </z-card>
+
+        @if (metricas.gravidadeMedia) {
+        <ng-template #gravidadeMediaTitle>
+            <div class="flex items-center gap-2">
+                <z-icon zType="circle-alert" zSize="default" class="text-gray-600"></z-icon>
+                <span class="font-medium">Gravidade Média</span>
+            </div>
+        </ng-template>
+        <z-card [zTitle]="gravidadeMediaTitle" class="!p-4">
+            <div class="space-y-1">
+                <div class="text-xl font-semibold text-gray-900">{{ metricas.gravidadeMedia.toFixed(1) }}</div>
+            </div>
+        </z-card>
+        }
+
+        @if (metricas.variacaoPercentual !== undefined) {
+        <ng-template #variacaoTitle>
+            <div class="flex items-center gap-2">
+                <z-icon zType="arrow-up-right" zSize="default" class="text-gray-600"></z-icon>
+                <span class="font-medium">Variação</span>
+            </div>
+        </ng-template>
+        <z-card [zTitle]="variacaoTitle" class="!p-4">
+            <div class="space-y-1">
+                <div class="text-xl font-semibold" [class.text-green-600]="metricas.variacaoPercentual >= 0"
+                    [class.text-red-600]="metricas.variacaoPercentual < 0">
+                    {{ metricas.variacaoPercentual >= 0 ? '+' : '' }}{{ metricas.variacaoPercentual.toFixed(1) }}%
+                </div>
+            </div>
+        </z-card>
+        }
+
+        @if (metricas.topBairrosCriticos) {
+        <ng-template #bairrosCriticosTitle>
+            <div class="flex items-center gap-2">
+                <z-icon zType="layers" zSize="default" class="text-gray-600"></z-icon>
+                <span class="font-medium">Bairros Críticos</span>
+            </div>
+        </ng-template>
+        <z-card [zTitle]="bairrosCriticosTitle" class="!p-4">
+            <div class="space-y-1">
+                <div class="text-xl font-semibold text-gray-900">{{ metricas.topBairrosCriticos.length }}</div>
+            </div>
+        </z-card>
+        }
+    </div>
+    }
+
+    @if (rel.resumoExecutivo) {
+    <ng-template #resumoExecutivoTitle>
+        <div class="flex items-center gap-2">
+            <z-icon zType="file-text" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Resumo Executivo</span>
+        </div>
+    </ng-template>
+    <z-card [zTitle]="resumoExecutivoTitle" class="mb-6 !p-4">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{{ rel.resumoExecutivo }}</p>
+        </div>
+    </z-card>
+    }
+
+    @if (rel.conteudoCompleto && rel.conteudoCompleto.principaisAchados; as principaisAchados) {
+    @if (principaisAchados.length > 0) {
+    <ng-template #principaisAchadosTitle>
+        <div class="flex items-center gap-2">
+            <z-icon zType="circle-check" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Principais Achados</span>
+        </div>
+    </ng-template>
+    <z-card [zTitle]="principaisAchadosTitle" class="mb-6 !p-4">
+        <ul class="space-y-2">
+            @for (achado of principaisAchados; track $index) {
+            <li class="flex items-start gap-2">
+                <span class="text-blue-600 mt-1">•</span>
+                <span class="text-sm text-gray-700">{{ achado }}</span>
+            </li>
+            }
+        </ul>
+    </z-card>
+    }
+    }
+
+    @if (rel.areasCriticas; as areasCriticas) {
+    @if (areasCriticas.length > 0) {
+    <ng-template #areasCriticasTitle>
+        <div class="flex items-center gap-2">
+            <z-icon zType="circle-alert" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Áreas Críticas Identificadas</span>
+        </div>
+    </ng-template>
+    <z-card [zTitle]="areasCriticasTitle" class="mb-6 !p-4">
+        <div class="grid gap-4">
+            @for (area of areasCriticas; track area.bairro) {
+            <div class="border border-red-200 rounded-lg p-4 bg-red-50">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-sm font-semibold text-gray-900">{{ area.bairro }}</h3>
+                    <span class="text-xs text-gray-600">{{ area.totalOcorrencias }} ocorrências</span>
+                </div>
+                @if (area.tipoProblema) {
+                <p class="text-xs text-gray-600 mb-2">
+                    Tipo principal: {{ area.tipoProblema }}
+                </p>
+                }
+                <p class="text-xs text-gray-700">
+                    Gravidade média: <span class="font-semibold">{{ area.gravidadeMedia }}</span>
+                </p>
+                @if (area.razao) {
+                <p class="mt-2 text-xs text-gray-700">
+                    {{ area.razao }}
+                </p>
+                }
+            </div>
+            }
+        </div>
+    </z-card>
+    }
+    }
+
+    @if (rel.conteudoCompleto && rel.conteudoCompleto.tendencias; as tendencias) {
+    <ng-template #tendenciasTitle>
+        <div class="flex items-center gap-2">
+            <z-icon zType="arrow-up-right" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Tendências</span>
+        </div>
+    </ng-template>
+    <z-card [zTitle]="tendenciasTitle" class="mb-6 !p-4">
+        <div class="space-y-3">
+            @if (tendencias.crescimento) {
+            <div>
+                <h3 class="text-sm font-medium text-gray-900 mb-1">Crescimento</h3>
+                <p class="text-xs text-gray-700">{{ tendencias.crescimento }}</p>
+            </div>
+            }
+            @if (tendencias.padroesTemporais) {
+            <div>
+                <h3 class="text-sm font-medium text-gray-900 mb-1">Padrões Temporais</h3>
+                <p class="text-xs text-gray-700">{{ tendencias.padroesTemporais }}</p>
+            </div>
+            }
+            @if (tendencias.correlacoes) {
+            <div>
+                <h3 class="text-sm font-medium text-gray-900 mb-1">Correlações</h3>
+                <p class="text-xs text-gray-700">{{ tendencias.correlacoes }}</p>
+            </div>
+            }
+        </div>
+    </z-card>
+    }
+
+    @if (rel.recomendacoes; as recomendacoes) {
+    @if (recomendacoes.length > 0) {
+    <ng-template #recomendacoesTitle>
+        <div class="flex items-center gap-2">
+            <z-icon zType="lightbulb" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Recomendações</span>
+        </div>
+    </ng-template>
+    <z-card [zTitle]="recomendacoesTitle" class="mb-6 !p-4">
+        <div class="space-y-4">
+            @for (rec of recomendacoes; track rec.acao) {
+            <div class="border-l-4 border-blue-500 pl-4 py-2">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full"
+                        [class]="getPrioridadeBadgeClass(rec.prioridade)">
+                        {{ rec.prioridade.toUpperCase() }}
+                    </span>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-900 mb-1">{{ rec.acao }}</h3>
+                <p class="text-xs text-gray-600 mb-2">{{ rec.justificativa }}</p>
+                <p class="text-xs text-gray-700">
+                    <span class="font-medium">Impacto esperado:</span> {{ rec.impactoEsperado }}
+                </p>
+            </div>
+            }
+        </div>
+    </z-card>
+    }
+    }
+
+    @if (rel.conteudoCompleto && rel.conteudoCompleto.insights) {
+    @if (rel.conteudoCompleto.insights.length > 0) {
+    <ng-template #insightsTitle>
+        <div class="flex items-center gap-2">
+            <z-icon zType="lightbulb" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Insights Adicionais</span>
+        </div>
+    </ng-template>
+    <z-card [zTitle]="insightsTitle" class="mb-6 !p-4">
+        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <ul class="space-y-2">
+                @for (insight of rel.conteudoCompleto.insights; track $index) {
+                <li class="flex items-start gap-2">
+                    <z-icon zType="lightbulb" zSize="sm" class="text-purple-600 mt-0.5"></z-icon>
+                    <span class="text-xs text-gray-700">{{ insight }}</span>
+                </li>
+                }
+            </ul>
+        </div>
+    </z-card>
+    }
+    }
+    }
+</div>

@@ -1,0 +1,18 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "color": "#FF0000", "label": "Zona Crítica" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[ -49.06, -26.92 ], [ -49.07, -26.93 ], [ -49.05, -26.93 ]]]
+      }
+    },
+    {
+    "type": "Feature",
+    "properties": { "color": "#0000FF", "label": "Zona Segura" },
+    "geometry": { "type": "Polygon", "coordinates": [[[ -49.0725, -26.9170 ], [ -49.0735, -26.9180 ], [ -49.0715, -26.9180 ]]] }
+    }
+  ]
+}

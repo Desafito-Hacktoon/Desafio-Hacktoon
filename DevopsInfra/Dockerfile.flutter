@@ -1,0 +1,20 @@
+FROM ubuntu:20.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y tzdata && \
+    ln -fs /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata && \
+    apt-get install -y curl unzip xz-utils git libglu1-mesa zip ninja-build pkg-config && \
+    git clone https://github.com/flutter/flutter.git -b stable /flutter
+
+ENV PATH="/flutter/bin:$PATH"
+
+WORKDIR /app
+COPY App-Flutter/ /app
+
+RUN flutter pub get && flutter build web
+
+FROM nginx:alpine
+COPY --from=builder /app/build/web /usr/share/nginx/html

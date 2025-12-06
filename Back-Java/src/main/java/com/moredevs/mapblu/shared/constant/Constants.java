@@ -52,8 +52,21 @@ public final class Constants {
         public static final double BLUMENAU_LATITUDE = -26.5510;
         public static final double BLUMENAU_LONGITUDE = -49.0258;
         
+        // Bounding box de Blumenau (expandido)
+        public static final double BLUMENAU_MIN_LAT = -26.95;
+        public static final double BLUMENAU_MAX_LAT = -26.85;
+        public static final double BLUMENAU_MIN_LNG = -49.12;
+        public static final double BLUMENAU_MAX_LNG = -49.02;
+        
         // Raio padrão para buscas próximas (em metros)
         public static final double DEFAULT_SEARCH_RADIUS = 5000.0; // 5km
+        
+        // Tamanhos padrão para heatmap (em metros)
+        public static final double DEFAULT_GRID_SIZE_METERS = 500.0; // 500 metros
+        public static final double DEFAULT_HEX_SIZE_METERS = 300.0; // 300 metros para hexágonos
+        
+        // Conversão de metros para graus (aproximação: 1 grau de latitude ≈ 111 km)
+        public static final double METERS_TO_DEGREES = 1.0 / 111000.0;
         
         private Geo() {}
     }

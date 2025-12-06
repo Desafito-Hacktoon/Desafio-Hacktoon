@@ -1,0 +1,264 @@
+<div class="font-sans">
+    <div class="mb-6 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <z-icon zType="lightbulb" zSize="default" class="text-gray-600"></z-icon>
+            <div>
+                <h1 class="text-xl font-medium text-gray-900">Gerar Insight</h1>
+                <p class="text-xs text-gray-600 mt-0.5">Gere insights inteligentes sobre ocorrências</p>
+            </div>
+        </div>
+        <button z-button zType="default" zSize="default" (click)="voltar()" class="!bg-gray-100 hover:!bg-gray-200">
+            ← Voltar
+        </button>
+    </div>
+
+    @if (!insight()) {
+    <ng-template #configuracoesTitle>
+        <div class="flex items-center gap-2">
+            <z-icon zType="settings" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Configurações do Insight</span>
+        </div>
+    </ng-template>
+    <z-card [zTitle]="configuracoesTitle" class="!p-4">
+        <form (ngSubmit)="gerarInsight()" class="space-y-4">
+            <div class="space-y-1">
+                <label class="text-xs font-medium text-gray-600">Tipo de Insight</label>
+                <z-select [zValue]="tipoInsight() || ''" zSize="default" zPlaceholder="Selecione o tipo"
+                    (zSelectionChange)="onTipoInsightChange($event)" class="w-full">
+                    @for (tipo of tiposInsight; track tipo) {
+                    <z-select-item [zValue]="tipo">{{ getTipoInsightLabel(tipo) }}</z-select-item>
+                    }
+                </z-select>
+            </div>
+
+            @if (tipoInsight() === TipoInsight.AREA_CRITICA) {
+            <div class="space-y-4 p-3 bg-gray-50 rounded-lg border">
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-600">Bairro *</label>
+                    <z-select [zValue]="areaCriticaForm().bairro" zSize="default" zPlaceholder="Selecione o bairro"
+                        (zSelectionChange)="onBairroAreaCriticaChange($event)" class="w-full">
+                        @for (bairro of bairros; track bairro) {
+                        <z-select-item [zValue]="bairro">{{ bairro }}</z-select-item>
+                        }
+                    </z-select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-600">Tipo de Problema (opcional)</label>
+                    <input z-input zSize="default" type="text" [value]="areaCriticaForm().tipoProblema"
+                        (input)="atualizarAreaCriticaTipoProblema($event)" placeholder="Ex: Buraco na rua"
+                        class="w-full">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-medium text-gray-600">Período Início</label>
+                        <input z-input zSize="default" type="datetime-local" [value]="areaCriticaForm().periodo"
+                            (input)="atualizarAreaCriticaPeriodo($event)" class="w-full">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-medium text-gray-600">Período Fim</label>
+                        <input z-input zSize="default" type="datetime-local" [value]="areaCriticaForm().periodoFim"
+                            (input)="atualizarAreaCriticaPeriodoFim($event)" class="w-full">
+                    </div>
+                </div>
+            </div>
+            }
+
+            @if (tipoInsight() === TipoInsight.TENDENCIA) {
+            <div class="space-y-4 p-3 bg-gray-50 rounded-lg border">
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-600">Tipo de Problema *</label>
+                    <input z-input zSize="default" type="text" [value]="tendenciaForm().tipoProblema"
+                        (input)="atualizarTendenciaTipoProblema($event)" placeholder="Ex: Buraco na rua" required
+                        class="w-full">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-600">Bairro (opcional)</label>
+                    <z-select [zValue]="tendenciaForm().bairro || ''" zSize="default"
+                        zPlaceholder="Selecione o bairro (opcional)"
+                        (zSelectionChange)="onBairroTendenciaChange($event)" class="w-full">
+                        <z-select-item [zValue]="''">Todos os bairros</z-select-item>
+                        @for (bairro of bairros; track bairro) {
+                        <z-select-item [zValue]="bairro">{{ bairro }}</z-select-item>
+                        }
+                    </z-select>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-medium text-gray-600">Período Início</label>
+                        <input z-input zSize="default" type="datetime-local" [value]="tendenciaForm().periodo"
+                            (input)="atualizarTendenciaPeriodo($event)" class="w-full">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-xs font-medium text-gray-600">Período Fim</label>
+                        <input z-input zSize="default" type="datetime-local" [value]="tendenciaForm().periodoFim"
+                            (input)="atualizarTendenciaPeriodoFim($event)" class="w-full">
+                    </div>
+                </div>
+            </div>
+            }
+
+            @if (tipoInsight() === TipoInsight.PREDICAO) {
+            <div class="space-y-4 p-3 bg-gray-50 rounded-lg border">
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-600">Horizonte (dias) *</label>
+                    <input z-input zSize="default" type="number" [value]="predicaoForm().horizonte"
+                        (input)="atualizarPredicaoHorizonte($event)" min="1" max="365" required class="w-full">
+                    <p class="text-xs text-gray-500">Quantos dias à frente você quer prever? (1-365)</p>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-600">Área (opcional)</label>
+                    <z-select [zValue]="predicaoForm().area || ''" zSize="default"
+                        zPlaceholder="Selecione o bairro (opcional)" (zSelectionChange)="onBairroPredicaoChange($event)"
+                        class="w-full">
+                        <z-select-item [zValue]="''">Toda a cidade</z-select-item>
+                        @for (bairro of bairros; track bairro) {
+                        <z-select-item [zValue]="bairro">{{ bairro }}</z-select-item>
+                        }
+                    </z-select>
+                </div>
+            </div>
+            }
+
+            @if (tipoInsight() === TipoInsight.EXPLICACAO) {
+            <div class="space-y-4 p-3 bg-gray-50 rounded-lg border">
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-600">Pergunta (opcional)</label>
+                    <input z-input zSize="default" type="text" [value]="explicacaoForm().pergunta"
+                        (input)="atualizarExplicacaoPergunta($event)"
+                        placeholder="Ex: Por que há tantos buracos no Centro?" class="w-full">
+                </div>
+            </div>
+            }
+
+            @if (tipoInsight() === TipoInsight.PERGUNTA_LIVRE) {
+            <div class="space-y-4 p-3 bg-gray-50 rounded-lg border">
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-600">Pergunta *</label>
+                    <textarea z-input zSize="default" [value]="perguntaForm().pergunta"
+                        (input)="atualizarPerguntaLivre($event)"
+                        placeholder="Ex: Quais são os bairros com mais ocorrências de iluminação pública?" rows="4"
+                        required class="w-full"></textarea>
+                </div>
+            </div>
+            }
+
+            @if (error()) {
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p class="text-red-800 text-xs">{{ error() }}</p>
+            </div>
+            }
+
+            <div class="flex justify-end gap-3 pt-3 border-t border-gray-200">
+                <button z-button zType="outline" zSize="default" type="button" (click)="voltar()">
+                    Cancelar
+                </button>
+                <button z-button zType="default" zSize="default" type="submit" [disabled]="loading() || !tipoInsight()"
+                    class="!bg-[#135ce4] !text-white hover:!bg-[#0f4bc0] !border-0 disabled:opacity-50 disabled:cursor-not-allowed">
+                    @if (loading()) {
+                    Gerando...
+                    } @else {
+                    Gerar Insight
+                    }
+                </button>
+            </div>
+        </form>
+    </z-card>
+    }
+
+    @if (insight(); as result) {
+    <ng-template #insightGeradoTitle>
+        <div class="flex items-center gap-2">
+            <z-icon zType="lightbulb" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Insight Gerado</span>
+        </div>
+    </ng-template>
+    <z-card [zTitle]="insightGeradoTitle" class="mb-6 !p-4">
+        <div class="space-y-4">
+            <!-- Header do Insight -->
+            <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <span
+                        class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                        {{ getTipoInsightLabel(result.tipo) }}
+                    </span>
+                    @if (result.confianca) {
+                    <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full"
+                        [class]="getConfiancaClass(result.confianca)">
+                        Confiança: {{ (result.confianca * 100).toFixed(0) }}%
+                    </span>
+                    }
+                    @if (result.doCache) {
+                    <span
+                        class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                        Do Cache
+                    </span>
+                    }
+                </div>
+                <div class="text-xs text-gray-500">
+                    {{ result.dataGeracao | date:'dd/MM/yyyy HH:mm' }}
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{{ result.insight }}</p>
+            </div>
+
+            @if (temDadosSuporte(result.dadosSuporte)) {
+            <div>
+                <h3 class="text-xs font-medium text-gray-900 mb-2">Dados de Suporte</h3>
+                <div class="bg-gray-50 rounded-lg p-3">
+                    <pre class="text-xs text-gray-700 whitespace-pre-wrap">{{ result.dadosSuporte | json }}</pre>
+                </div>
+            </div>
+            }
+
+            @if (result.recomendacoes && result.recomendacoes.length > 0) {
+            <div>
+                <h3 class="text-xs font-medium text-gray-900 mb-2">Recomendações</h3>
+                <ul class="space-y-2">
+                    @for (rec of result.recomendacoes; track $index) {
+                    <li class="flex items-start gap-2">
+                        <span class="text-green-600 mt-1">✓</span>
+                        <span class="text-gray-700 text-xs">{{ rec }}</span>
+                    </li>
+                    }
+                </ul>
+            </div>
+            }
+
+            <div class="pt-3 border-t border-gray-200">
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    @if (result.modeloIA) {
+                    <div>
+                        <p class="text-gray-500">Modelo IA</p>
+                        <p class="text-sm font-medium text-gray-900">{{ result.modeloIA }}</p>
+                    </div>
+                    }
+                    @if (result.relevancia) {
+                    <div>
+                        <p class="text-gray-500">Relevância</p>
+                        <p class="text-sm font-medium text-gray-900">{{ result.relevancia }}/10</p>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-3 border-t border-gray-200">
+                <button z-button zType="default" zSize="default" (click)="insight.set(null); tipoInsight.set(null)"
+                    class="!bg-[#135ce4] !text-white hover:!bg-[#0f4bc0] !border-0">
+                    Gerar Novo Insight
+                </button>
+            </div>
+        </div>
+    </z-card>
+    }
+
+    @if (loading()) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 text-center">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p class="text-gray-700">Gerando insight... Isso pode levar alguns segundos.</p>
+        </div>
+    </div>
+    }
+</div>

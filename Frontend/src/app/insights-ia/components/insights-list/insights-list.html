@@ -1,0 +1,109 @@
+<div class="font-sans">
+    <ng-template #tiposInsightsTitle>
+        <div class="flex items-center gap-2">
+            <z-icon zType="lightbulb" zSize="default" class="text-gray-600"></z-icon>
+            <span class="font-medium">Tipos de Insights Disponíveis</span>
+        </div>
+    </ng-template>
+    <z-card [zTitle]="tiposInsightsTitle" class="!p-4">
+        <div class="space-y-4">
+            <div class="p-3 bg-gray-50 rounded-lg border">
+                <div class="space-y-1">
+                    <label class="text-xs font-medium text-gray-600">Selecione o tipo de insight</label>
+                    <z-select [zValue]="tipoSelecionado()" zSize="default" zPlaceholder="Escolha um tipo de insight"
+                        (zSelectionChange)="onTipoChange($event)" class="w-full">
+                        @for (tipo of tiposInsight; track tipo) {
+                        <z-select-item [zValue]="tipo">{{ getTipoInsightLabel(tipo) }}</z-select-item>
+                        }
+                    </z-select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                    (click)="navegarParaGerar(TipoInsight.AREA_CRITICA)">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
+                            <z-icon zType="circle-alert" class="text-xl"></z-icon>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-gray-900 mb-0.5">Área Crítica</h3>
+                            <p class="text-xs text-gray-600">Entenda por que um bairro é considerado crítico</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                    (click)="navegarParaGerar(TipoInsight.TENDENCIA)">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                            <z-icon zType="arrow-up" class="text-xl"></z-icon>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-gray-900 mb-0.5">Tendência</h3>
+                            <p class="text-xs text-gray-600">Analise tendências de crescimento ou decrescimento</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                    (click)="navegarParaGerar(TipoInsight.PADRAO)">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0">
+                            <z-icon zType="search" class="text-xl"></z-icon>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-gray-900 mb-0.5">Padrão</h3>
+                            <p class="text-xs text-gray-600">Identifique padrões interessantes nos dados</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                    (click)="navegarParaGerar(TipoInsight.PREDICAO)">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center flex-shrink-0">
+                            <z-icon zType="eye" class="text-xl"></z-icon>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-gray-900 mb-0.5">Predição</h3>
+                            <p class="text-xs text-gray-600">Preveja possíveis problemas futuros</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                    (click)="navegarParaGerar(TipoInsight.EXPLICACAO)">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0">
+                            <z-icon zType="lightbulb" class="text-xl"></z-icon>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-gray-900 mb-0.5">Explicação</h3>
+                            <p class="text-xs text-gray-600">Entenda por que um fenômeno está acontecendo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-2 border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+                    (click)="navegarParaGerar(TipoInsight.PERGUNTA_LIVRE)">
+                    <div class="flex items-start gap-3">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                            <z-icon zType="info" class="text-xl"></z-icon>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-gray-900 mb-0.5">Pergunta Livre</h3>
+                            <p class="text-xs text-gray-600">Faça perguntas livres sobre as ocorrências</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </z-card>
+</div>

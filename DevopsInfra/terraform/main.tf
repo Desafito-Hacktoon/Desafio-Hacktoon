@@ -139,10 +139,17 @@ resource "aws_security_group" "BluLabs_sg" {
   }
 }
 
+
+resource "null_resource" "flutter_web" {
+  provisioner "local-exec" {
+    command = "docker-compose -f docker-compose.yml up -d --build"
+    working_dir = "${path.module}"
+  }
+}
+
 # ------------------------------
 # EC2 Instance
 # ------------------------------
-
 resource "aws_instance" "BluLabs_server" {
   ami                         = var.ami_id
   instance_type               = var.instance_type
@@ -151,11 +158,20 @@ resource "aws_instance" "BluLabs_server" {
   vpc_security_group_ids      = [aws_security_group.BluLabs_sg.id]
   associate_public_ip_address = true
 
+  root_block_device {
+    volume_size = 20         
+    volume_type = "gp3"     
+  }
+
   user_data = <<-EOF
     #!/bin/bash
     set -e
 
     echo "🚀 Iniciando setup da VM..."
+
+    # Atualiza pacotes e instala dependências
+    apt-get update -y
+    apt-get install -y git curl unzip xz-utils zip libglu1-mesa docker.io
 
     # Instalar Docker
     if ! command -v docker &> /dev/null; then
@@ -172,12 +188,77 @@ resource "aws_instance" "BluLabs_server" {
 
     # Clonar repositório
     cd /home/ubuntu
-    git clone https://github.com/Desafito-Hacktoon/Desafio-Hackathon.git
-    cd Desafio-Hackathon
+    git clone -b develop https://github.com/Desafito-Hacktoon/Desafio-Hackathon.git
+    
+    # Instalar Flutter SDK
+    git clone https://github.com/flutter/flutter.git -b stable /home/ubuntu/flutter
+    ln -sf /home/ubuntu/flutter/bin/flutter /usr/local/bin/flutter
+    echo 'export PATH="$PATH:/home/ubuntu/flutter/bin"' > /etc/profile.d/flutter.sh
+    chmod 644 /etc/profile.d/flutter.sh
 
-    # Subir containers
-    docker-compose up -d
+
+   
+    # Corrige permissões
+    chown -R ubuntu:ubuntu /home/ubuntu/flutter
+    chown -R ubuntu:ubuntu /home/ubuntu/Desafio-Hackathon
+    sudo -u ubuntu git config --global --add safe.directory /home/ubuntu/flutter || true
+
+    # Build do Flutter Web
+    cd /home/ubuntu/Desafio-Hackathon/App-Flutter
+    /home/ubuntu/flutter/bin/flutter pub get
+    /home/ubuntu/flutter/bin/flutter build web
+
+    # Instalar NVM e Node.js como ubuntu
+    su - ubuntu -c '
+    export NVM_DIR="/home/ubuntu/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] || curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+    source "$NVM_DIR/nvm.sh"
+    nvm install 22
+    nvm use 22
+
+    cd /home/ubuntu/Desafio-Hackathon/Frontend
+    npm install --legacy-peer-deps
+    npm run build -- --configuration production
+'
+
+    cd /home/ubuntu/Desafio-Hackathon/DevopsInfra
+    docker-compose up -d --build
+
+
+    
+    
+
+    
   EOF
+
+    
+
+  # Copia o .env da sua máquina para dentro da EC2
+  provisioner "file" {
+    source      = "../.env"
+    destination = "/home/ubuntu/.env"
+  }
+
+
+  # Executa os comandos do Docker Compose já com o .env presente
+  provisioner "remote-exec" {
+  inline = [
+    "while [ ! -d /home/ubuntu/Desafio-Hackathon/DevopsInfra ]; do sleep 2; done",
+    "if [ -f /home/ubuntu/.env ]; then sudo mv /home/ubuntu/.env /home/ubuntu/Desafio-Hackathon/DevopsInfra/.env; else echo 'Arquivo .env não encontrado'; fi",
+    "cd /home/ubuntu/Desafio-Hackathon/DevopsInfra",
+    "sudo docker-compose pull",
+    "sudo docker-compose up --build -d"
+  ]
+}
+
+  # Conexão SSH para os provisioners
+  connection {
+    type        = "ssh"
+    user        = "ubuntu"
+    private_key = file("~/.ssh/id_rsa")
+    host        = self.public_ip
+  }
+
 
   tags = {
     Name        = "BluLabs-server"

@@ -1,0 +1,47 @@
+<div class="map-container relative">
+  <div class="absolute top-4 left-[66px] z-[1000] bg-white rounded-lg shadow-lg p-3 border border-gray-200">
+    <div class="flex items-center gap-3">
+      <z-segmented 
+        [zValue]="periodoSegmentedValue()" 
+        [zOptions]="periodosOptions"
+        (zSelectionChange)="onPeriodoChange($event)"
+        zSize="default">
+      </z-segmented>
+      <z-date-picker
+        [value]="periodoDataSelecionado()"
+        (dateChange)="onDataChange($event)"
+        placeholder="Escolher data"
+        zSize="default"
+        zType="outline"
+        zMode="range"
+        class="!bg-gray-100">
+      </z-date-picker>
+    </div>
+  </div>
+
+  <div id="map"></div>
+  @if (showInfoTooltip()) {
+  <div class="absolute top-4 right-4 z-[1000] bg-white rounded-lg shadow-lg p-4 max-w-xs border border-gray-200">
+    <div class="flex items-start gap-3">
+      <z-icon zType="info" class="text-blue-600 flex-shrink-0 mt-0.5" />
+      <div class="flex-1">
+        <h3 class="text-sm font-semibold text-gray-900 mb-2">Como navegar no mapa</h3>
+        <ul class="text-xs text-gray-600 space-y-1.5">
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 font-medium">•</span>
+            <span><strong>Scroll do mouse:</strong> Aproximar e afastar (zoom)</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-600 font-medium">•</span>
+            <span><strong>Botão esquerdo:</strong> Arrastar para navegar pelo mapa</span>
+          </li>
+        </ul>
+      </div>
+      <button (click)="toggleInfoTooltip()" class="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+        aria-label="Fechar informações">
+        <z-icon zType="x" class="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+  }
+</div>

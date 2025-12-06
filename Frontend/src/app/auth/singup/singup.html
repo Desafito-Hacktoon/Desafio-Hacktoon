@@ -1,0 +1,143 @@
+<div class="h-screen w-screen grid grid-cols-[119px_1fr_119px] grid-rows-[100px_1fr_100px] gap-[1px]">
+    <!-- Linha 1 -->
+    <div class="bg-stripes rounded-br-lg"></div>
+    <div class="bg-white rounded-bl-lg rounded-br-lg flex items-center justify-center">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-[#135ce4] text-white flex items-center justify-center flex-shrink-0">
+                <z-icon zType="file-text" class="text-xl"></z-icon>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-lg font-semibold text-slate-900 whitespace-nowrap">MapBlu</span>
+                <span class="text-xs text-gray-500 whitespace-nowrap">Gestão de ocorrências</span>
+            </div>
+        </div>
+    </div>
+    <div class="bg-stripes rounded-bl-lg"></div>
+    
+    <!-- Linha 2 -->
+    <div class="bg-white rounded-tr-lg rounded-br-lg"></div>
+    <div class="bg-white flex items-center justify-center rounded-lg">
+        <div class="w-full max-w-md">
+            <z-card>
+                <div class="space-y-4">
+                    <div class="text-center space-y-1">
+                        <h1 class="text-2xl font-semibold text-gray-900">Cadastro</h1>
+                        <p class="text-sm text-gray-600">Crie sua conta para acessar o sistema</p>
+                    </div>
+
+                    <form (ngSubmit)="onSubmit()" #signupForm="ngForm" class="space-y-3">
+                        @if (errorMessage) {
+                        <div class="p-3 bg-red-50 border border-red-200 rounded-md">
+                            <p class="text-sm text-red-800">{{ errorMessage }}</p>
+                        </div>
+                        }
+
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700">Username</label>
+                            <input 
+                                z-input 
+                                zSize="default"
+                                type="text" 
+                                [(ngModel)]="username" 
+                                name="username" 
+                                required 
+                                [disabled]="isLoading"
+                                minlength="3"
+                                maxlength="50"
+                                placeholder="Digite seu username"
+                                class="w-full" />
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700">Nome Completo (Opcional)</label>
+                            <input 
+                                z-input 
+                                zSize="default"
+                                type="text" 
+                                [(ngModel)]="nomeCompleto" 
+                                name="nomeCompleto" 
+                                [disabled]="isLoading"
+                                maxlength="100"
+                                placeholder="Digite seu nome completo"
+                                class="w-full" />
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700">Email</label>
+                            <input 
+                                z-input 
+                                zSize="default"
+                                type="email" 
+                                [(ngModel)]="email" 
+                                name="email" 
+                                required 
+                                [disabled]="isLoading"
+                                placeholder="Digite seu email"
+                                class="w-full" />
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700">Senha</label>
+                            <input 
+                                z-input 
+                                zSize="default"
+                                type="password" 
+                                [(ngModel)]="password" 
+                                name="password" 
+                                required 
+                                [disabled]="isLoading"
+                                minlength="8"
+                                placeholder="Mínimo 8 caracteres"
+                                class="w-full" />
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-sm font-medium text-gray-700">Confirmar Senha</label>
+                            <input 
+                                z-input 
+                                zSize="default"
+                                type="password" 
+                                [(ngModel)]="confirmPassword" 
+                                name="confirmPassword" 
+                                required 
+                                [disabled]="isLoading"
+                                placeholder="Confirme sua senha"
+                                class="w-full" />
+                        </div>
+
+                        <button 
+                            z-button 
+                            zType="default" 
+                            zSize="default"
+                            zFull="true"
+                            type="submit" 
+                            [disabled]="isLoading"
+                            [zLoading]="isLoading"
+                            class="!bg-[#135ce4] !text-white hover:!bg-[#0f4bc0] !border-0 w-full">
+                            @if (!isLoading) {
+                            Criar Conta
+                            } @else {
+                            Criando conta...
+                            }
+                        </button>
+                    </form>
+
+                    <div class="text-center pt-2">
+                        <p class="text-sm text-gray-600">
+                            Já possui conta?
+                            <a routerLink="/login" class="text-[#135ce4] hover:text-[#0f4bc0] font-medium ml-1">
+                                Faça login
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </z-card>
+        </div>
+    </div>
+    <div class="bg-white rounded-tl-lg rounded-bl-lg"></div>
+    
+    <!-- Linha 3 -->
+    <div class="bg-stripes rounded-tr-lg"></div>
+    <div class="bg-white rounded-tl-lg rounded-tr-lg"></div>
+    <div class="bg-stripes rounded-tl-lg"></div>
+</div>

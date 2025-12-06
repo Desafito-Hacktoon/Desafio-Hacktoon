@@ -1,0 +1,9 @@
+.map-container {
+  height: 869px;
+  position: relative;
+}
+
+.map-container #map{
+  height: 100%;
+  width: 100%;
+}

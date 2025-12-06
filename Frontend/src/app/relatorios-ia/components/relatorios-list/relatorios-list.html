@@ -1,0 +1,193 @@
+<div class="font-sans">
+    <div class="mb-6 flex items-center justify-end">
+        <div class="flex items-center gap-3">
+            <z-segmented 
+                [zValue]="periodoSegmentedValue()" 
+                [zOptions]="periodosOptions"
+                (zSelectionChange)="onPeriodoChange($event)"
+                zSize="default">
+            </z-segmented>
+            <z-date-picker
+                [value]="periodoDataSelecionado()"
+                (dateChange)="onDataChange($event)"
+                zMode="range"
+                placeholder="Escolher data"
+                zSize="default"
+                zType="outline"
+                class="!bg-gray-100">
+            </z-date-picker>
+            <button z-button zType="default" zSize="default" (click)="gerarRelatorioCustomizado()"
+                class="!bg-[#135ce4] !text-white hover:!bg-[#0f4bc0] !border-0">
+                + Gerar Relatório
+            </button>
+        </div>
+    </div>
+
+    <z-card>
+        <div class="space-y-4">
+            <div class="p-3 bg-gray-50 rounded-lg border">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+                    <div class="space-y-1">
+                        <label class="text-sm font-medium text-gray-600">Tipo de Relatório</label>
+                        <z-select [zValue]="tipoRelatorioSelecionado()" zSize="default" zPlaceholder="Todos"
+                            (zSelectionChange)="onTipoChange($event)" class="text-sm">
+                            <z-select-item [zValue]="''">Todos</z-select-item>
+                            @for (tipo of tiposRelatorio; track tipo) {
+                            <z-select-item [zValue]="tipo">{{ getTipoRelatorioLabel(tipo) }}</z-select-item>
+                            }
+                        </z-select>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-sm font-medium text-gray-600">Status</label>
+                        <z-select [zValue]="statusSelecionado()" zSize="default" zPlaceholder="Todos"
+                            (zSelectionChange)="onStatusChange($event)" class="text-sm">
+                            <z-select-item [zValue]="''">Todos</z-select-item>
+                            @for (status of statusRelatorio; track status) {
+                            <z-select-item [zValue]="status">{{ status }}</z-select-item>
+                            }
+                        </z-select>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-sm font-medium text-gray-600 invisible">Limpar</label>
+                        <div class="flex items-end gap-2">
+                            <button z-button zSize="default" (click)="aplicarFiltros()"
+                                class="flex-1 h-9 !bg-[#135ce4] !text-white hover:!bg-[#0f4bc0] !border-0">
+                                Filtrar
+                            </button>
+                            <button z-button zSize="default" (click)="limparFiltros()" class="flex-1 h-9">
+                                Limpar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (loading()) {
+            <div class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <p class="mt-4 text-gray-600">Carregando relatórios...</p>
+            </div>
+            }
+
+            @if (error() && !loading()) {
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p class="text-red-800">{{ error() }}</p>
+            </div>
+            }
+
+            @if (!loading() && !error()) {
+            <div class="overflow-x-auto">
+                <table z-table class="w-full text-sm border-separate border-spacing-0">
+                    <thead z-table-header>
+                        <tr z-table-row>
+                            <th z-table-head
+                                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                                Título
+                            </th>
+                            <th z-table-head
+                                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                                Tipo
+                            </th>
+                            <th z-table-head
+                                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                                Período
+                            </th>
+                            <th z-table-head
+                                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-center">
+                                Status
+                            </th>
+                            <th z-table-head
+                                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-left">
+                                Data Geração
+                            </th>
+                            <th z-table-head
+                                class="bg-gray-50 font-semibold text-xs text-gray-600 uppercase tracking-wider px-4 py-3 text-center">
+                                Tempo
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody z-table-body>
+                        @for (relatorio of paginatedRelatorios(); track relatorio.id) {
+                        <tr z-table-row class="cursor-pointer hover:bg-gray-50 border-b border-gray-200"
+                            (click)="visualizarRelatorio(relatorio.id)">
+                            <td z-table-cell
+                                class="px-4 py-3 text-sm font-medium text-gray-900 border-b border-gray-200">
+                                {{ relatorio.titulo }}
+                            </td>
+                            <td z-table-cell class="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
+                                <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">
+                                    {{ getTipoRelatorioLabel(relatorio.tipoRelatorio) }}
+                                </span>
+                            </td>
+                            <td z-table-cell class="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
+                                {{ relatorio.periodoInicio | date:'dd/MM/yyyy' }} - {{ relatorio.periodoFim |
+                                date:'dd/MM/yyyy' }}
+                            </td>
+                            <td z-table-cell class="px-4 py-3 text-center border-b border-gray-200">
+                                <span class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full"
+                                    [class]="getStatusBadgeClass(relatorio.status)">
+                                    {{ relatorio.status }}
+                                </span>
+                            </td>
+                            <td z-table-cell class="px-4 py-3 text-sm text-gray-500 border-b border-gray-200">
+                                <div class="flex flex-col">
+                                    <span class="text-xs text-gray-900">{{ relatorio.dataGeracao | date:'dd/MM/yyyy' }}</span>
+                                    <span class="text-xs text-gray-900">{{ relatorio.dataGeracao | date:'HH:mm' }}</span>
+                                </div>
+                            </td>
+                            <td z-table-cell
+                                class="px-4 py-3 text-sm text-gray-500 text-center border-b border-gray-200">
+                                @if (relatorio.tempoProcessamentoMs) {
+                                {{ (relatorio.tempoProcessamentoMs / 1000).toFixed(1) }}s
+                                } @else {
+                                -
+                                }
+                            </td>
+                        </tr>
+                        } @empty {
+                        <tr z-table-row>
+                            <td z-table-cell [attr.colspan]="6" class="text-center py-8 text-gray-500 text-sm">
+                                Nenhum relatório encontrado
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (totalPages() > 0) {
+            <div class="flex items-center justify-between border-t border-gray-200 pt-4">
+                <div class="flex items-center gap-4">
+                    <div class="text-sm text-gray-700">
+                        Mostrando <span class="font-medium">{{ paginationInfo().start }}</span> até
+                        <span class="font-medium">{{ paginationInfo().end }}</span> de
+                        <span class="font-medium">{{ paginationInfo().total }}</span> relatórios
+                        @if (paginationInfo().totalPages > 1) {
+                        <span class="text-gray-500"> (Página {{ paginationInfo().currentPage }} de {{
+                            paginationInfo().totalPages }})</span>
+                        }
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium text-gray-600">Itens por página:</label>
+                        <z-select [zValue]="itemsPerPage().toString()" zSize="default" zPlaceholder="Selecione"
+                            (zSelectionChange)="onItemsPerPageChange($event)" class="text-sm w-20">
+                            @for (option of itemsPerPageOptions; track option) {
+                            <z-select-item [zValue]="option.toString()">{{ option }}</z-select-item>
+                            }
+                        </z-select>
+                    </div>
+                </div>
+
+                <div>
+                    <z-pagination [zPageIndex]="currentPage()" [zTotal]="totalPages()"
+                        (zPageIndexChange)="onPageChange($event)" />
+                </div>
+            </div>
+            }
+            }
+        </div>
+    </z-card>
+</div>

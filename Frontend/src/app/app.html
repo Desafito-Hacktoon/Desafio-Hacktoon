@@ -1,0 +1,125 @@
+<z-layout class="h-screen w-full">
+  @if (!isAuthPage()) {
+  <z-sidebar [zWidth]="256" class="!h-full !p-0 custom-sidebar">
+    <div class="h-full flex flex-col gap-[1px]">
+      <div class="px-4 h-[60px] flex items-center flex-shrink-0 bg-white rounded-br-lg">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-[#135ce4] text-white flex items-center justify-center flex-shrink-0">
+            <z-icon zType="file-text" class="text-xl"></z-icon>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-lg font-semibold text-slate-900 whitespace-nowrap">MapBlu</span>
+            <span class="text-xs text-gray-500 whitespace-nowrap">Gestão de ocorrências</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 py-4 flex-shrink-0 bg-white rounded-tr-lg rounded-br-lg">
+        @if (auth.isLoggedIn()) {
+        <z-user-menu></z-user-menu>
+        } @else {
+        <a routerLink="/login" z-button zType="default" zSize="sm" class="w-full justify-center">
+          Entrar
+        </a>
+        }
+      </div>
+
+      <div class="flex-1 flex flex-col px-4 py-4 min-h-0 bg-white rounded-tr-lg">
+        <div class="flex-1 overflow-auto">
+          <z-sidebar-group-label class="!h-auto !py-1 !block !text-gray-400">
+            MENU
+          </z-sidebar-group-label>
+          <z-sidebar-group>
+            <a routerLink="/dashboard" routerLinkActive="active"
+              [ngClass]="{'bg-[#135ce4]/10 text-[#135ce4] hover:bg-[#135ce4]/15': router.isActive('/dashboard', false), 'text-slate-900 hover:bg-gray-100': !router.isActive('/dashboard', false)}"
+              class="flex items-center gap-3 px-4 py-2 rounded-lg no-underline text-sm font-medium transition-all duration-200 cursor-pointer">
+              <z-icon zType="layout-dashboard" class="flex-shrink-0"></z-icon>
+              <span>Dashboard</span>
+            </a>
+            <a routerLink="/mapa" routerLinkActive="active"
+              [ngClass]="{'bg-[#135ce4]/10 text-[#135ce4] hover:bg-[#135ce4]/15': router.isActive('/mapa', false), 'text-slate-900 hover:bg-gray-100': !router.isActive('/mapa', false)}"
+              class="flex items-center gap-3 px-4 py-2 rounded-lg no-underline text-sm font-medium transition-all duration-200 cursor-pointer">
+              <z-icon zType="layers" class="flex-shrink-0"></z-icon>
+              <span>Mapa</span>
+            </a>
+            <a routerLink="/ocorrencias" routerLinkActive="active"
+              [ngClass]="{'bg-[#135ce4]/10 text-[#135ce4] hover:bg-[#135ce4]/15': router.isActive('/ocorrencias', false), 'text-slate-900 hover:bg-gray-100': !router.isActive('/ocorrencias', false)}"
+              class="flex items-center gap-3 px-4 py-2 rounded-lg no-underline text-sm font-medium transition-all duration-200 cursor-pointer">
+              <z-icon zType="file-text" class="flex-shrink-0"></z-icon>
+              <span>Ocorrências</span>
+            </a>
+            <a routerLink="/relatorios-ia" routerLinkActive="active"
+              [ngClass]="{'bg-[#135ce4]/10 text-[#135ce4] hover:bg-[#135ce4]/15': router.isActive('/relatorios-ia', false), 'text-slate-900 hover:bg-gray-100': !router.isActive('/relatorios-ia', false)}"
+              class="flex items-center gap-3 px-4 py-2 rounded-lg no-underline text-sm font-medium transition-all duration-200 cursor-pointer">
+              <z-icon zType="clipboard" class="flex-shrink-0"></z-icon>
+              <span>Relatórios IA</span>
+            </a>
+            <a routerLink="/insights-ia" routerLinkActive="active"
+              [ngClass]="{'bg-[#135ce4]/10 text-[#135ce4] hover:bg-[#135ce4]/15': router.isActive('/insights-ia', false), 'text-slate-900 hover:bg-gray-100': !router.isActive('/insights-ia', false)}"
+              class="flex items-center gap-3 px-4 py-2 rounded-lg no-underline text-sm font-medium transition-all duration-200 cursor-pointer">
+              <z-icon zType="lightbulb" class="flex-shrink-0"></z-icon>
+              <span>Insights IA</span>
+            </a>
+          </z-sidebar-group>
+        </div>
+        
+        <div class="flex-shrink-0 mt-auto">
+          <z-sidebar-group-label class="!h-auto !py-1 !block !text-gray-400">
+            MENU SECUNDÁRIO
+          </z-sidebar-group-label>
+          <z-sidebar-group>
+            <a routerLink="/departamentos" routerLinkActive="active"
+              [ngClass]="{'bg-[#135ce4]/10 text-[#135ce4] hover:bg-[#135ce4]/15': router.isActive('/departamentos', false), 'text-slate-900 hover:bg-gray-100': !router.isActive('/departamentos', false)}"
+              class="flex items-center gap-3 px-4 py-2 rounded-lg no-underline text-sm font-medium transition-all duration-200 cursor-pointer">
+              <z-icon zType="users" class="flex-shrink-0"></z-icon>
+              <span>Departamentos</span>
+            </a>
+            <a routerLink="/configuracoes" routerLinkActive="active"
+              [ngClass]="{'bg-[#135ce4]/10 text-[#135ce4] hover:bg-[#135ce4]/15': router.isActive('/configuracoes', false), 'text-slate-900 hover:bg-gray-100': !router.isActive('/configuracoes', false)}"
+              class="flex items-center gap-3 px-4 py-2 rounded-lg no-underline text-sm font-medium transition-all duration-200 cursor-pointer">
+              <z-icon zType="settings" class="flex-shrink-0"></z-icon>
+              <span>Configurações</span>
+            </a>
+          </z-sidebar-group>
+        </div>
+      </div>
+    </div>
+  </z-sidebar>
+  }
+
+  <div class="flex flex-col flex-1 min-w-0 overflow-hidden gap-[1px]">
+    @if (!isAuthPage()) {
+    <z-header [zHeight]="60" class="!bg-white custom-header rounded-bl-lg">
+      <div class="flex items-center justify-between px-4 w-full h-full">
+        <div class="flex items-center gap-2 h-full">
+          <z-icon [zType]="currentPageIcon()" class="text-gray-600"></z-icon>
+          <h1 class="text-lg font-semibold text-slate-900 m-0">
+            {{ currentPageTitle() }}
+          </h1>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <button class="relative p-2 rounded-lg hover:bg-gray-200 transition-colors">
+            <z-icon zType="bell" zSize="xl" class="text-gray-600 !w-4 !h-4"></z-icon>
+            <span class="absolute top-1 right-1 w-2 h-2 bg-[#135ce4] rounded-full"></span>
+          </button>
+        </div>
+      </div>
+    </z-header>
+    }
+
+    <z-content [class]="isAuthPage() ? 'auth-page !bg-transparent !min-h-0 flex-1 overflow-hidden !p-0 [&>main]:!p-0 [&>main]:!h-full [&>main]:!w-full' : '!bg-white !min-h-0 flex-1 overflow-hidden !p-0 rounded-tl-lg'">
+      @if (isAuthPage()) {
+      <router-outlet></router-outlet>
+      } @else {
+      <div class="h-full w-full max-w-[1400px] rounded-tl-lg overflow-hidden">
+        <div class="h-full overflow-auto">
+          <div class="p-6">
+            <router-outlet></router-outlet>
+          </div>
+        </div>
+      </div>
+      }
+    </z-content>
+  </div>
+</z-layout>
