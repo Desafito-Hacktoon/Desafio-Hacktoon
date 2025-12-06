@@ -6,4 +6,4 @@ RUN npm install --legacy-peer-deps && npm run build -- --configuration productio
 
 # Etapa final: Nginx servindo Angular
 FROM nginx:alpine
-COPY --from=builder /app/dist/heat-map-app /usr/share/nginx/html
+COPY --from=builder /app/dist/heatMap-app /usr/share/nginx/html

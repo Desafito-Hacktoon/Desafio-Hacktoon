@@ -84,6 +84,8 @@ services:
     build:
       context: ../ 
       dockerfile: DevopsInfra/Dockerfile.flutter
+      args:
+        API_JAVA_BASE_URL: http://backend-java-core:8080
     ports:
       - "4200:80"
     restart: unless-stopped
@@ -96,7 +98,7 @@ services:
     container_name: frontend-angular
     restart: unless-stopped
     ports:
-      - "4200:80"
+      - "3000:80"
     environment:
       API_JAVA_BASE_URL: http://backend-java-core:8080
       
