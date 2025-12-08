@@ -11,6 +11,9 @@ RUN apt-get update && \
 
 ENV PATH="/flutter/bin:$PATH"
 
+# Define argumento vindo do docker-compose
+ARG API_JAVA_BASE_URL
+
 WORKDIR /app
 COPY App-Flutter/ /app
 
